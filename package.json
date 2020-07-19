@@ -1,0 +1,31 @@
+{
+  "name": "forget-me-block-eth-cal",
+  "version": "1.0.0",
+  "description": "Data preservation resarch on the Ethereum blockchain",
+  "main": "truffle-config.js",
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {
+    "ethlint": "^1.2.5"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PreciousChicken/forget-me-block-eth-cal.git"
+  },
+  "keywords": [
+    "ethereum",
+    "solitiy",
+    "blockchain"
+  ],
+  "author": "PreciousChicken",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/PreciousChicken/forget-me-block-eth-cal/issues"
+  },
+  "homepage": "https://github.com/PreciousChicken/forget-me-block-eth-cal#readme"
+}
