@@ -23,15 +23,19 @@ contract CalStore  {
         userVEvent.push(newData);
         store[msg.sender] = userVEvent;
     }
+    function justSayHi() public pure returns (string memory) {
+        return "Hi";
+    }
 
 
     // Returns all msg for msg.sender, regardless of time
-    function getEvents() public view returns (VEvent[] memory) {
-        VEvent[] memory tempData = store[msg.sender];
+    function getEvents(address _calOwner) public view returns (VEvent[] memory) {
+        VEvent[] memory tempData = store[_calOwner];
         return tempData;
     }
 }
 
 // CalStore.deployed().then(function(instance) {app = instance})
 // app.storeEvent(1595170930, 1595171111, 33, "Deloitte Meeting", "Discuss new project");
-// app.getEvents();
+// app.getEvents('0xD6733F5011732cfb46788549bb8342556E2D9096');
+// app.justSayHi();
