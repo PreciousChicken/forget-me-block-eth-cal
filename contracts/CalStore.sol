@@ -38,6 +38,7 @@ contract CalStore  {
 }
 
 // CalStore.deployed().then(function(instance) {app = instance})
-// app.storeEvent(1595170930, 1501419600, 1501421400, "Deloitte Meeting", "Discuss new project");
+// app.storeEvent(1595170930, 1596121200, 1596123000, "Meeting 1", "First Meeting");
+// app.storeEvent(1595171030, 1596290400, 1596295800, "Meeting 2", "Second Meeting");
 // app.getEvents('0x5aE61985C224be414018795Aff6C60F4cA37A8fE');
 // app.justSayHi();
