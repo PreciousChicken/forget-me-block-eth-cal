@@ -8,7 +8,8 @@
   },
   "dependencies": {
     "ethers": "^5.0.6",
-    "ethlint": "^1.2.5"
+    "ethlint": "^1.2.5",
+    "moment": "^2.27.0"
   },
   "devDependencies": {},
   "scripts": {
