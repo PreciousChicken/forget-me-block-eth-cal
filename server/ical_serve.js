@@ -4,7 +4,7 @@ var fs = require('fs');
 var CalStore = require('../build/contracts/CalStore.json');
 const url = "http://127.0.0.1:7545";
 const provider = new ethers.providers.JsonRpcProvider(url);
-const contractAddress ='0xEb44EF401C6562B557B072F10bAd9428a12004bB';
+const contractAddress ='0xFE854725F23a30014F4684aD4212BF7E4D8D3628';
 
 // Connect to the network
 // We connect to the Contract using a Provider, so we will only
@@ -42,5 +42,5 @@ async function getEvent(userAddress) {
 	});
 }
 
-getEvent("0x5aE61985C224be414018795Aff6C60F4cA37A8fE");
+getEvent("0x43126483FA825ED8F9E8a75Bee4CC57Ba1f2cFa2");
 
