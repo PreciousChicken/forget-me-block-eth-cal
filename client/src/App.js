@@ -106,14 +106,18 @@ function App() {
 
 		</div>
 		</form>
-		<h2>iCal is available for import into your favourite Email application at:</h2>
+		<h2>Subscribe to this calendar in your email application:</h2>
 
 		<p>https://ezcontract.hopto.org/api/listen?address={walAddress}</p>
-		<p>actually for testing it is:</p>
-		<p>http://localhost:3305/listen?address={walAddress}</p>
+
+		<p>Instructions for <a href="https://support.microsoft.com/en-us/office/import-or-subscribe-to-a-calendar-in-outlook-com-cff1429c-5af6-41ec-a5b4-74f2c278e98c">Outlook</a> and <a href="https://support.mozilla.org/en-US/kb/creating-new-calendars#w_icalendar-ics">Thunderbird</a></p>
 
 		</main>
 	);
 }
 
 export default App;
+
+
+		// <p>actually for testing it is:</p>
+		// <p>http://localhost:3305/listen?address={walAddress}</p>
