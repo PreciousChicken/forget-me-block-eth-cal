@@ -4,7 +4,7 @@ var fs = require('fs');
 var CalStore = require('../client/src/contracts/CalStore.json');
 const url = "http://127.0.0.1:7545";
 const provider = new ethers.providers.JsonRpcProvider(url);
-const contractAddress ='0xFE854725F23a30014F4684aD4212BF7E4D8D3628';
+const contractAddress ='0x672C2b35d61E6dF23f9f3eB0206f937C95f50a5E';
 var express = require('express')
 var cors = require('cors')
 var app = express()
@@ -68,4 +68,4 @@ app.get('/listen', (req, res) => {
 app.listen(3305, () => {
 	console.log('Db server listening on port 3305')
 });
-
+//TODO: Get server to return
