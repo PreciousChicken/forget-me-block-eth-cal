@@ -7,7 +7,7 @@ import { MuiPickersUtilsProvider, KeyboardDateTimePicker } from '@material-ui/pi
 import { ethers } from "ethers";
 import CalStore from "./contracts/CalStore.json";
 
-const contractAddress ='0x672C2b35d61E6dF23f9f3eB0206f937C95f50a5E';
+const contractAddress ='0x56f502B6c9C3e78ac021674648e0091CB06c30A7';
 
 let provider;
 let signer;
@@ -33,8 +33,6 @@ if (typeof window.ethereum !== 'undefined' || (typeof window.web3 !== 'undefined
 function App() {
 	const [selectedStartDate, handleStartDateChange] = useState(new Date());
 	const [selectedEndDate, handleEndDateChange] = useState(new Date());
-	const [eventTitle, setEventTitle] = useState("");
-	const [eventDescription, setEventDescription] = useState("");
 	const [walAddress, setWalAddress] = useState('0x00');
 
 	// Aborts app if metamask etc not present
@@ -51,22 +49,11 @@ function App() {
 		setWalAddress(response);
 	});
 
-
-    // function storeEvent(uint _dtstamp, uint _dtstart, uint _dtend, string memory _summary, string memory _description) public {
-
 	// Handles user store message form submit
 	const handleNewEvent = (event) => { 
-		setEventDescription(event.target.description.value);
-		setEventTitle(event.target.title.value);
-		console.log(selectedStartDate);
 		let unixStart = moment(selectedStartDate).unix();
 		let unixEnd = moment(selectedEndDate).unix();
-		contractCalStore.justSayHi().then(msg => {console.log(msg)});
-		contractCalStore.storeEvent(moment().unix(), unixStart, unixEnd, eventTitle,eventDescription);
-		let fetchAddress = "/api/listen?address="+walAddress;
-		fetch(fetchAddress)
-			.then(response => response.json())
-			.then(data => console.log(data));
+		contractCalStore.storeEvent(moment().unix(), unixStart, unixEnd, event.target.title.value,event.target.description.value);
 		event.preventDefault();
 	};
 
@@ -74,10 +61,7 @@ function App() {
 		<main>
 		<h1>Forget-me-Block: Ethereum Calendar</h1>
 
-		<p>You are user: {walAddress}</p>
-		<span>event desc: {eventDescription} and event title: {eventTitle}</span>
 		<h2>New event:</h2>
-
 		<form onSubmit={handleNewEvent}>
 
 		<div className="block-element">

@@ -2,9 +2,14 @@ var ethers = require('ethers');
 var moment = require('moment'); 
 var fs = require('fs');
 var CalStore = require('../client/src/contracts/CalStore.json');
-const url = "http://127.0.0.1:7545";
-const provider = new ethers.providers.JsonRpcProvider(url);
-const contractAddress ='0x672C2b35d61E6dF23f9f3eB0206f937C95f50a5E';
+// const url = "http://127.0.0.1:7545";
+
+const network = "ropsten";
+const provider = ethers.getDefaultProvider(network, {
+    infura: "79351be4a978403f9bc187aa5060616c"
+});
+// const provider = new ethers.providers.JsonRpcProvider(url);
+const contractAddress ='0x56f502B6c9C3e78ac021674648e0091CB06c30A7';
 var express = require('express')
 var cors = require('cors')
 var app = express()
@@ -19,11 +24,11 @@ let contract = new ethers.Contract(contractAddress, CalStore.abi, provider);
 const vCalHeader = "BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//preciouschicken.com//forget-me-block-eth-cal\nCALSCALE:GREGORIAN\n"
 const vCalFooter = "END:VCALENDAR\n"
 var event, dtstamp, uid, dtstart, dtend, summary, description; 
-var outputString = "";
 
 
 
 async function getEvent(userAddress) {
+	let outputString = "";
 	event = await contract.getEvents(userAddress);
 	for (let i = 0; i < event.length; i++) {
 		dtstamp = moment.unix(event[i].dtstamp).format("YYYYMMDD[T]HHmmss");
@@ -43,10 +48,14 @@ async function getEvent(userAddress) {
 			"END:VEVENT\n";
 	}
 	outputString = vCalHeader + outputString + vCalFooter;
-	fs.writeFile('output.ics', outputString, function (err) {
-		if (err) throw err;
-		console.log('Saved!');
-	});
+
+	// Produces output file, no longer needed?
+	// fs.writeFile('output.ics', outputString, function (err) {
+	// 	if (err) throw err;
+	// 	console.log('Saved!');
+	// });
+	//
+	return outputString;
 }
 
 // Root query, test purposes only
@@ -57,10 +66,13 @@ app.get('/', (req,res) => {
 
 app.get('/listen', (req, res) => {
 	const { address } = req.query;
+	let iCal;
+	// getEvent(address).then(cal => {iCal = cal});
+	getEvent(address).then(cal => {return res.send(cal)});
 	console.log('API listen');
 	console.log(address);
 	// res.send('API listen send')
-	return res.json({msg: address});
+	// return res.send("Hello");
 });
 
 
