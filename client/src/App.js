@@ -122,7 +122,12 @@ function App() {
 
 		</div>
 		</form>
-		<h2>Generate iCal for import:</h2>
+		<h2>iCal is available for import into your favourite Email application at:</h2>
+
+		<p>https://ezcontract.hopto.org/api/listen?address={walAddress}</p>
+		<p>actually for testing it is:</p>
+		<p>http://localhost:3305/listen?address={walAddress}</p>
+
 		</main>
 	);
 }
