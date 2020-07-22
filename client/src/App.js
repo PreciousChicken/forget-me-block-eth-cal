@@ -7,7 +7,7 @@ import { MuiPickersUtilsProvider, KeyboardDateTimePicker } from '@material-ui/pi
 import { ethers } from "ethers";
 import CalStore from "./contracts/CalStore.json";
 
-const contractAddress ='0xFE854725F23a30014F4684aD4212BF7E4D8D3628';
+const contractAddress ='0x672C2b35d61E6dF23f9f3eB0206f937C95f50a5E';
 
 let provider;
 let signer;
@@ -35,7 +35,7 @@ function App() {
 	const [selectedEndDate, handleEndDateChange] = useState(new Date());
 	const [eventTitle, setEventTitle] = useState("");
 	const [eventDescription, setEventDescription] = useState("");
-	// const eventDescription = "";
+	const [walAddress, setWalAddress] = useState('0x00');
 
 	// Aborts app if metamask etc not present
 	if (noProviderAbort) {
@@ -47,6 +47,9 @@ function App() {
 		);
 	}
 
+	signer.getAddress().then(response => {
+		setWalAddress(response);
+	});
 
 
     // function storeEvent(uint _dtstamp, uint _dtstart, uint _dtend, string memory _summary, string memory _description) public {
@@ -60,6 +63,10 @@ function App() {
 		let unixEnd = moment(selectedEndDate).unix();
 		contractCalStore.justSayHi().then(msg => {console.log(msg)});
 		contractCalStore.storeEvent(moment().unix(), unixStart, unixEnd, eventTitle,eventDescription);
+		let fetchAddress = "/api/listen?address="+walAddress;
+		fetch(fetchAddress)
+			.then(response => response.json())
+			.then(data => console.log(data));
 		event.preventDefault();
 	};
 
@@ -67,7 +74,8 @@ function App() {
 		<main>
 		<h1>Forget-me-Block: Ethereum Calendar</h1>
 
-		<span>{eventDescription} and {eventTitle}</span>
+		<p>You are user: {walAddress}</p>
+		<span>event desc: {eventDescription} and event title: {eventTitle}</span>
 		<h2>New event:</h2>
 
 		<form onSubmit={handleNewEvent}>
@@ -97,14 +105,15 @@ function App() {
 		</MuiPickersUtilsProvider>
 		</div>
 		<div className="block-element">
-		      <TextField
-    name="description"      id="outlined-multiline-static"
-          label="Description"
+		<TextField
+		name="description"      
+		id="outlined-multiline-static"
+		label="Description"
 		style = {{width: 450}}
-          multiline
-          rows={4}
-          variant="outlined"
-        />
+		multiline
+		rows={4}
+		variant="outlined"
+		/>
 		</div>
 		<div className="block-element">
 		<Button variant="contained" color="primary" type="submit">
