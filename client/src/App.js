@@ -2,6 +2,8 @@ import React, { useState  } from 'react';
 import './App.css';
 import DateFnsUtils from "@date-io/date-fns";
 import moment from 'moment';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import { Button, TextField } from '@material-ui/core';
 import { MuiPickersUtilsProvider, KeyboardDateTimePicker } from '@material-ui/pickers';
 import { ethers } from "ethers";
@@ -45,6 +47,8 @@ function App() {
 		);
 	}
 
+	const notify = () => toast.error("Error: End date must be after start date!");
+
 	signer.getAddress().then(response => {
 		setWalAddress(response);
 	});
@@ -53,7 +57,11 @@ function App() {
 	const handleNewEvent = (event) => { 
 		let unixStart = moment(selectedStartDate).unix();
 		let unixEnd = moment(selectedEndDate).unix();
-		contractCalStore.storeEvent(moment().unix(), unixStart, unixEnd, event.target.title.value,event.target.description.value);
+		if (unixStart > unixEnd) {
+			notify();
+		} else {
+			contractCalStore.storeEvent(moment().unix(), unixStart, unixEnd, event.target.title.value,event.target.description.value);
+		}
 		event.preventDefault();
 	};
 
@@ -103,6 +111,7 @@ function App() {
 		<Button variant="contained" color="primary" type="submit">
 		Submit
 		</Button>
+		<ToastContainer />
 
 		</div>
 		</form>
