@@ -7,7 +7,7 @@ import { MuiPickersUtilsProvider, KeyboardDateTimePicker } from '@material-ui/pi
 import { ethers } from "ethers";
 import CalStore from "./contracts/CalStore.json";
 
-const contractAddress ='0x56f502B6c9C3e78ac021674648e0091CB06c30A7';
+const contractAddress ='0xd1423a6c5A60bFD42245Bb27d8D7B52c708dd857';
 
 let provider;
 let signer;

@@ -4,12 +4,21 @@ var fs = require('fs');
 var CalStore = require('../client/src/contracts/CalStore.json');
 // const url = "http://127.0.0.1:7545";
 
-const network = "ropsten";
-const provider = ethers.getDefaultProvider(network, {
-    infura: "79351be4a978403f9bc187aa5060616c"
-});
+// Below is for ropsten
+// const network = "ropsten";
+// const provider = ethers.getDefaultProvider(network, {
+//     infura: "79351be4a978403f9bc187aa5060616c"
+// });
 // const provider = new ethers.providers.JsonRpcProvider(url);
-const contractAddress ='0x56f502B6c9C3e78ac021674648e0091CB06c30A7';
+
+// Below is for local
+const url = "http://127.0.0.1:7545";
+const provider = ethers.providers.getDefaultProvider(url);
+
+
+
+
+const contractAddress ='0xd1423a6c5A60bFD42245Bb27d8D7B52c708dd857';
 var express = require('express')
 var cors = require('cors')
 var app = express()
