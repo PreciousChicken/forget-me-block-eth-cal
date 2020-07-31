@@ -9,7 +9,7 @@ import { MuiPickersUtilsProvider, KeyboardDateTimePicker } from '@material-ui/pi
 import { ethers } from "ethers";
 import CalStore from "./contracts/CalStore.json";
 
-const contractAddress ='0xd1423a6c5A60bFD42245Bb27d8D7B52c708dd857';
+const contractAddress ='0x58A5d6F0DB34d4616D8343704264c12fD44C0dfd';
 
 let provider;
 let signer;
@@ -46,7 +46,7 @@ function MyCalendar() {
 			}
 			setEventsList([...eventsList, newEvent]);
 		}
-	};
+	}
 
 	return (
 		<div>
@@ -91,11 +91,61 @@ function App() {
 		event.preventDefault();
 	};
 
+	const getBlockchainEvent = () => { 
+		contractCalStore.getEvents();
+		event.preventDefault();
+	};
+
 	return (
 		<main>
 		<h1>Forget-me-Block: Ethereum Calendar</h1>
 		<MyCalendar />
 
+		<h2>New event:</h2>
+		<form onSubmit={handleNewEvent}>
+
+		<div className="block-element">
+		<TextField 
+		name="title" id="outlined-basic" label="Title" variant="outlined" />
+		</div>
+		<div className="block-element">
+		<MuiPickersUtilsProvider utils={DateFnsUtils}>	
+		<KeyboardDateTimePicker 
+		format="yyyy-MM-dd HH:mm"
+		ampm="false"
+		label="Start"
+		inputVariant="outlined"
+		value={selectedStartDate} onChange={handleStartDateChange} />
+		</MuiPickersUtilsProvider>
+		</div>
+		<div className="block-element">
+		<MuiPickersUtilsProvider utils={DateFnsUtils}>	
+		<KeyboardDateTimePicker 
+		format="yyyy-MM-dd HH:mm"
+		ampm="false"
+		label="End"
+		inputVariant="outlined"
+		value={selectedEndDate} onChange={handleEndDateChange} />
+		</MuiPickersUtilsProvider>
+		</div>
+		<div className="block-element">
+		<TextField
+		name="description"      
+		id="outlined-multiline-static"
+		label="Description"
+		style = {{width: 450}}
+		multiline
+		rows={4}
+		variant="outlined"
+		/>
+		</div>
+		<div className="block-element">
+		<Button variant="contained" color="primary" type="submit">
+		Submit
+		</Button>
+
+		</div>
+		</form>
 		<h2>Subscribe to this calendar in your email application:</h2>
 
 		<p>https://ezcontract.hopto.org/api/listen?address={walAddress}</p>
@@ -114,48 +164,3 @@ export default App;
 
 // Old Input calendar buttons
 //
-		// <h2>New event:</h2>
-		// <form onSubmit={handleNewEvent}>
-
-		// <div className="block-element">
-		// <TextField 
-		// name="title" id="outlined-basic" label="Title" variant="outlined" />
-		// </div>
-		// <div className="block-element">
-		// <MuiPickersUtilsProvider utils={DateFnsUtils}>	
-		// <KeyboardDateTimePicker 
-		// format="yyyy-MM-dd HH:mm"
-		// ampm="false"
-		// label="Start"
-		// inputVariant="outlined"
-		// value={selectedStartDate} onChange={handleStartDateChange} />
-		// </MuiPickersUtilsProvider>
-		// </div>
-		// <div className="block-element">
-		// <MuiPickersUtilsProvider utils={DateFnsUtils}>	
-		// <KeyboardDateTimePicker 
-		// format="yyyy-MM-dd HH:mm"
-		// ampm="false"
-		// label="End"
-		// inputVariant="outlined"
-		// value={selectedEndDate} onChange={handleEndDateChange} />
-		// </MuiPickersUtilsProvider>
-		// </div>
-		// <div className="block-element">
-		// <TextField
-		// name="description"      
-		// id="outlined-multiline-static"
-		// label="Description"
-		// style = {{width: 450}}
-		// multiline
-		// rows={4}
-		// variant="outlined"
-		// />
-		// </div>
-		// <div className="block-element">
-		// <Button variant="contained" color="primary" type="submit">
-		// Submit
-		// </Button>
-
-		// </div>
-		// </form>

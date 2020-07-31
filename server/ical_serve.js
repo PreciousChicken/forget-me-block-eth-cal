@@ -18,7 +18,7 @@ const provider = ethers.providers.getDefaultProvider(url);
 
 
 
-const contractAddress ='0xd1423a6c5A60bFD42245Bb27d8D7B52c708dd857';
+const contractAddress ='0x58A5d6F0DB34d4616D8343704264c12fD44C0dfd';
 var express = require('express')
 var cors = require('cors')
 var app = express()
