@@ -162,7 +162,7 @@ contract CalStore  {
 // CalStore.deployed().then(function(instance) {app = instance})
 // app.storeEvent(1595170930, 1596121200, 1596123000, "Meeting 1", "First Meeting");
 // app.storeEvent(1595171030, 1596290400, 1596295800, "Meeting 2", "Second Meeting");
-// app.getEvents('0x56F1Db4937328D1102273D1192f3094C9Ffb1310');
+// app.getEventsObj('0x56F1Db4937328D1102273D1192f3094C9Ffb1310');
 // app.getEventsIcal('0x56F1Db4937328D1102273D1192f3094C9Ffb1310');
 // app.justSayHi();
 
