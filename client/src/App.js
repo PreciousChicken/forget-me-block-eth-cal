@@ -9,7 +9,7 @@ import { MuiPickersUtilsProvider, KeyboardDateTimePicker } from '@material-ui/pi
 import { ethers } from "ethers";
 import CalStore from "./contracts/CalStore.json";
 
-const contractAddress ='0x58A5d6F0DB34d4616D8343704264c12fD44C0dfd';
+const contractAddress ='0x71C425e294EcC704576D809415dA74b00588E263';
 
 let provider;
 let signer;
@@ -32,9 +32,10 @@ if (typeof window.ethereum !== 'undefined' || (typeof window.web3 !== 'undefined
 }
 
 
-function MyCalendar() {
+function MyCalendar(props) {
 	const localizer = momentLocalizer(moment)
-	const [eventsList, setEventsList] = useState([]);
+	const [eventsList, setEventsList] = useState(props.ethEvents);
+	// console.log("mycalprop", eventsList);
 
 	function handleSelect ({ start, end }) {
 		const title = window.prompt('New Event name')
@@ -50,6 +51,7 @@ function MyCalendar() {
 
 	return (
 		<div>
+		<span>eventsList: {eventsList[0]}</span>
 		<Calendar
 		selectable
 		defaultView="week"
@@ -68,6 +70,7 @@ function App() {
 	const [selectedStartDate, handleStartDateChange] = useState(new Date());
 	const [selectedEndDate, handleEndDateChange] = useState(new Date());
 	const [walAddress, setWalAddress] = useState('0x00');
+	const [calEvents, setCalEvents] = useState([]);
 
 	// Aborts app if metamask etc not present
 	if (noProviderAbort) {
@@ -79,9 +82,14 @@ function App() {
 		);
 	}
 
-	signer.getAddress().then(response => {
-		setWalAddress(response);
-	});
+	signer.getAddress()
+		.then(response => {
+			setWalAddress(response);	
+			contractCalStore.getEventsObj(response)
+				.then(blockEvents => {
+					setCalEvents(blockEvents)}
+				)
+		});
 
 	// Handles user store message form submit
 	const handleNewEvent = (event) => { 
@@ -91,15 +99,15 @@ function App() {
 		event.preventDefault();
 	};
 
-	const getBlockchainEvent = () => { 
-		contractCalStore.getEvents();
+	const getBlockchainEvent = (event) => { 
+		contractCalStore.getEventsObj(walAddress).then(msg => console.log(msg[0].description));
 		event.preventDefault();
 	};
 
 	return (
 		<main>
 		<h1>Forget-me-Block: Ethereum Calendar</h1>
-		<MyCalendar />
+		<MyCalendar ethEvents={calEvents} />
 
 		<h2>New event:</h2>
 		<form onSubmit={handleNewEvent}>
@@ -145,6 +153,13 @@ function App() {
 		</Button>
 
 		</div>
+		</form>
+		<h2>Get Block</h2>
+		<form onSubmit={getBlockchainEvent}>
+		<Button variant="contained" color="primary" type="submit">
+		Submit
+		</Button>
+
 		</form>
 		<h2>Subscribe to this calendar in your email application:</h2>
 
