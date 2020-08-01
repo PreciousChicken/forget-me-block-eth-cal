@@ -32,46 +32,13 @@ if (typeof window.ethereum !== 'undefined' || (typeof window.web3 !== 'undefined
 }
 
 
-function MyCalendar(props) {
-	const localizer = momentLocalizer(moment)
-	const [eventsList, setEventsList] = useState(props.ethEvents);
-	// console.log("mycalprop", eventsList);
-
-	function handleSelect ({ start, end }) {
-		const title = window.prompt('New Event name')
-		if (title) {
-			var newEvent = {
-				start: start,
-				end: end,
-				title: title 
-			}
-			setEventsList([...eventsList, newEvent]);
-		}
-	}
-
-	return (
-		<div>
-		<span>eventsList: {eventsList[0]}</span>
-		<Calendar
-		selectable
-		defaultView="week"
-		defaultDate={new Date()}
-		localizer={localizer}
-		events={eventsList}
-		startAccessor="start"
-		endAccessor="end"
-		style={{ height: 500 }}
-		onSelectSlot={handleSelect}
-		/>
-		</div>
-	)
-}
 function App() {
 	const [selectedStartDate, handleStartDateChange] = useState(new Date());
 	const [selectedEndDate, handleEndDateChange] = useState(new Date());
 	const [walAddress, setWalAddress] = useState('0x00');
-	const [calEvents, setCalEvents] = useState([]);
-
+	const [eventsList, setEventsList] = useState([]);
+	const localizer = momentLocalizer(moment)
+	
 	// Aborts app if metamask etc not present
 	if (noProviderAbort) {
 		return (
@@ -86,8 +53,16 @@ function App() {
 		.then(response => {
 			setWalAddress(response);	
 			contractCalStore.getEventsObj(response)
-				.then(blockEvents => {
-					setCalEvents(blockEvents)}
+				.then(msg => {
+					let newEvent = {
+						id: 0,
+						allDay: false,
+						start: new Date(moment.unix(msg[0].dtstart.toNumber())),
+						end: new Date(moment.unix(msg[0].dtend.toNumber())),
+						title: msg[0].description 
+					};
+					setEventsList([newEvent]);
+				}
 				)
 		});
 
@@ -100,14 +75,57 @@ function App() {
 	};
 
 	const getBlockchainEvent = (event) => { 
-		contractCalStore.getEventsObj(walAddress).then(msg => console.log(msg[0].description));
+		console.log(eventsList);
+		contractCalStore.getEventsObj(walAddress)
+			.then(msg => {
+				let newEvent = {
+					id: 0,
+					allDay: false,
+					start: new Date(moment.unix(msg[0].dtstart.toNumber())),
+					end: new Date(moment.unix(msg[0].dtend.toNumber())),
+					title: msg[0].description 
+				};
+				console.log(newEvent);
+				setEventsList([...eventsList, newEvent]);
+				console.log(eventsList);
+			});
 		event.preventDefault();
 	};
+
+				console.log(eventsList);
+
+	function handleSelect ({ start, end }) {
+		const title = window.prompt('New Event name')
+		if (title) {
+			var newEvent = {
+				start: start,
+				end: end,
+				title: title 
+			}
+			setEventsList([...eventsList, newEvent])
+		}
+	}
+
+
+
 
 	return (
 		<main>
 		<h1>Forget-me-Block: Ethereum Calendar</h1>
-		<MyCalendar ethEvents={calEvents} />
+		<div>
+		<span>eventsList: </span>
+		<Calendar
+		selectable
+		defaultView="week"
+		defaultDate={new Date()}
+		localizer={localizer}
+		events={eventsList}
+		startAccessor="start"
+		endAccessor="end"
+		style={{ height: 500 }}
+		onSelectSlot={handleSelect}
+		/>
+		</div>
 
 		<h2>New event:</h2>
 		<form onSubmit={handleNewEvent}>
