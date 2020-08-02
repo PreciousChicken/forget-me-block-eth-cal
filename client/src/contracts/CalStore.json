@@ -17017,12 +17017,12 @@
     "5777": {
       "events": {},
       "links": {},
-      "address": "0x71C425e294EcC704576D809415dA74b00588E263",
-      "transactionHash": "0x33c0f47704b3c75ad628982f2fc931bc16a5a819f4dde53eae3c05d9b851f5db"
+      "address": "0xC4A7e00A7e526611e6B700B3B4a14F60B4181716",
+      "transactionHash": "0xf7cb35ddcab281b129c35b026222cf9e99078e973d9841041e3f018a8f7c3b90"
     }
   },
   "schemaVersion": "3.0.23",
-  "updatedAt": "2020-08-01T15:58:24.155Z",
+  "updatedAt": "2020-08-02T08:24:43.119Z",
   "networkType": "ethereum",
   "devdoc": {
     "methods": {

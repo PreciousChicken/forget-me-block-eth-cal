@@ -9,7 +9,7 @@ import { MuiPickersUtilsProvider, KeyboardDateTimePicker } from '@material-ui/pi
 import { ethers } from "ethers";
 import CalStore from "./contracts/CalStore.json";
 
-const contractAddress ='0x71C425e294EcC704576D809415dA74b00588E263';
+const contractAddress ='0xC4A7e00A7e526611e6B700B3B4a14F60B4181716';
 
 let provider;
 let signer;
@@ -54,16 +54,21 @@ function App() {
 			setWalAddress(response);	
 			contractCalStore.getEventsObj(response)
 				.then(msg => {
-					let newEvent = {
-						id: 0,
-						allDay: false,
-						start: new Date(moment.unix(msg[0].dtstart.toNumber())),
-						end: new Date(moment.unix(msg[0].dtend.toNumber())),
-						title: msg[0].description 
-					};
-					setEventsList([newEvent]);
-				}
-				)
+					if (msg[0]) { //TODO: Check this is needed when no data is in blockchain now there is a loop too
+						let eventArray = [];
+						for (let i = 0; i < msg.length; i++) {
+							let newEvent = {
+								id: i,
+								allDay: false,
+								start: new Date(moment.unix(msg[i].dtstart.toNumber())),
+								end: new Date(moment.unix(msg[i].dtend.toNumber())),
+								title: msg[i].description 
+							};
+							eventArray.push(newEvent);
+						}
+						setEventsList(eventArray);
+					}
+				})
 		});
 
 	// Handles user store message form submit
