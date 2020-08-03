@@ -14,7 +14,7 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 
-const contractAddress ='0x3Cfe9667cAa2E2fD057A729b5affEAB5525C8b48';
+const contractAddress ='0xa99C6410b6c1221040A7187CDa31Fe48ADC99A80';
 
 let provider;
 let signer;
@@ -45,7 +45,10 @@ function App() {
 	const [eventsList, setEventsList] = useState([]);
 	const localizer = momentLocalizer(moment);
 	const [open, setOpen] = React.useState(false);
-
+	const [activeEventTitle, setActiveEventTitle] = useState("");
+	const [activeEventDesc, setActiveEventDesc] = useState("");
+	const [activeEventStart, setActiveEventStart] = useState("");
+	const [activeEventEnd, setActiveEventEnd] = useState("");
 	
 	// Aborts app if metamask etc not present
 	if (noProviderAbort) {
@@ -57,7 +60,8 @@ function App() {
 		);
 	}
 
-  const handleClickOpen = () => {
+  const handleClickOpen = (event) => {
+		console.log("handleClickOpen", event.title);
     setOpen(true);
   };
 
@@ -84,7 +88,8 @@ function App() {
 								allDay: false,
 								start: new Date(moment.unix(msg[i].dtstart.toNumber())),
 								end: new Date(moment.unix(msg[i].dtend.toNumber())),
-								title: msg[i].description 
+								title: msg[i].summary,
+								desc: msg[i].description 
 							};
 							eventArray.push(newEvent);
 						}
@@ -129,7 +134,8 @@ function App() {
 			var newEvent = {
 				start: start,
 				end: end,
-				title: title 
+				title: title,
+				desc: title
 			}
 			setEventsList([...eventsList, newEvent])
 			let unixStart = moment(start).unix();
@@ -138,8 +144,19 @@ function App() {
 		}
 	}
 
+	function displayEvent( event ) {
+		console.log("doADialog", event.title);
+		setActiveEventTitle(event.title);
+		setActiveEventDesc(event.desc);
+		setActiveEventStart(moment(event.start).unix());
+		setActiveEventEnd(moment(event.end).unix());
+    setOpen(true);
+		console.log(activeEventTitle);
+	}
 
 
+
+		// onSelectEvent={event => alert(event.title)}
 
 	return (
 		<main>
@@ -156,7 +173,7 @@ function App() {
 		endAccessor="end"
 		style={{ height: 500 }}
 		onSelectSlot={handleSelect}
-		onSelectEvent={event => alert(event.title)}
+		onSelectEvent={displayEvent}
 		/>
 		</div>
 
@@ -234,19 +251,20 @@ function App() {
         aria-labelledby="alert-dialog-title"
         aria-describedby="alert-dialog-description"
       >
-        <DialogTitle id="alert-dialog-title">{"Use Google's location service?"}</DialogTitle>
+        <DialogTitle id="alert-dialog-title">{activeEventTitle}</DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
-            Let Google help apps determine location. This means sending anonymous location data to
-            Google, even when no apps are running.
+		Start: {activeEventStart}<br/> 
+		End: {activeEventEnd}<br/> 
+		Description: {activeEventDesc}<br/>
           </DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose} color="primary">
-            Disagree
+            Delete
           </Button>
           <Button onClick={handleClose} color="primary" autoFocus>
-            Agree
+            OK
           </Button>
         </DialogActions>
       </Dialog>
