@@ -47,8 +47,8 @@ function App() {
 	const [open, setOpen] = React.useState(false);
 	const [activeEventTitle, setActiveEventTitle] = useState("");
 	const [activeEventDesc, setActiveEventDesc] = useState("");
-	const [activeEventStart, setActiveEventStart] = useState("");
-	const [activeEventEnd, setActiveEventEnd] = useState("");
+	const [activeEventStart, setActiveEventStart] = useState(new Date());
+	const [activeEventEnd, setActiveEventEnd] = useState(new Date());
 	
 	// Aborts app if metamask etc not present
 	if (noProviderAbort) {
@@ -60,10 +60,6 @@ function App() {
 		);
 	}
 
-  const handleClickOpen = (event) => {
-		console.log("handleClickOpen", event.title);
-    setOpen(true);
-  };
 
   const handleClose = () => {
     setOpen(false);
@@ -145,13 +141,11 @@ function App() {
 	}
 
 	function displayEvent( event ) {
-		console.log("doADialog", event.title);
 		setActiveEventTitle(event.title);
 		setActiveEventDesc(event.desc);
-		setActiveEventStart(moment(event.start).unix());
-		setActiveEventEnd(moment(event.end).unix());
+		setActiveEventStart(event.start);
+		setActiveEventEnd(event.end);
     setOpen(true);
-		console.log(activeEventTitle);
 	}
 
 
@@ -242,9 +236,6 @@ function App() {
 			</>
 		}
 		<div>
-      <Button variant="outlined" color="primary" onClick={handleClickOpen}>
-        Open alert dialog
-      </Button>
       <Dialog
         open={open}
         onClose={handleClose}
@@ -254,8 +245,8 @@ function App() {
         <DialogTitle id="alert-dialog-title">{activeEventTitle}</DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
-		Start: {activeEventStart}<br/> 
-		End: {activeEventEnd}<br/> 
+{moment(activeEventStart).format("ddd D MMM YY")}<br/>
+		{moment(activeEventStart).format("H:mm")} - {moment(activeEventEnd).format("H:mm")}<br/> 
 		Description: {activeEventDesc}<br/>
           </DialogContentText>
         </DialogContent>
