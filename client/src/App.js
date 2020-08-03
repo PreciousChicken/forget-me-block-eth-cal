@@ -54,7 +54,9 @@ function App() {
 			setWalAddress(response);	
 			contractCalStore.getEventsObj(response)
 				.then(msg => {
-					if (msg[0]) { //TODO: Check this is needed when no data is in blockchain now there is a loop too
+					// console.log("msg.length", msg.length);
+					// console.log("eventsList.length", eventsList.length);
+					if (msg[0]  && msg.length >= eventsList.length) { //TODO: Check this is needed when no data is in blockchain now there is a loop too
 						let eventArray = [];
 						for (let i = 0; i < msg.length; i++) {
 							let newEvent = {
@@ -80,6 +82,7 @@ function App() {
 	};
 
 	const getBlockchainEvent = (event) => { 
+		console.log("Am I triggered???");
 		console.log(eventsList);
 		contractCalStore.getEventsObj(walAddress)
 			.then(msg => {
@@ -97,9 +100,10 @@ function App() {
 		event.preventDefault();
 	};
 
-				console.log(eventsList);
+				// console.log(eventsList);
 
 	function handleSelect ({ start, end }) {
+		//TODO: Start here add ethereum magic
 		const title = window.prompt('New Event name')
 		if (title) {
 			var newEvent = {
@@ -107,7 +111,11 @@ function App() {
 				end: end,
 				title: title 
 			}
+			console.log
 			setEventsList([...eventsList, newEvent])
+			let unixStart = moment(start).unix();
+			let unixEnd = moment(end).unix();
+			contractCalStore.storeEvent(moment().unix(), unixStart, unixEnd, title, title);
 		}
 	}
 
