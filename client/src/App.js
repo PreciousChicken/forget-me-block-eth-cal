@@ -8,8 +8,13 @@ import { Button, TextField } from '@material-ui/core';
 import { MuiPickersUtilsProvider, KeyboardDateTimePicker } from '@material-ui/pickers';
 import { ethers } from "ethers";
 import CalStore from "./contracts/CalStore.json";
+import Dialog from '@material-ui/core/Dialog';
+import DialogActions from '@material-ui/core/DialogActions';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogContentText from '@material-ui/core/DialogContentText';
+import DialogTitle from '@material-ui/core/DialogTitle';
 
-const contractAddress ='0x182384CA72F49c7e565107b8CD457c123F41Ed9e';
+const contractAddress ='0x3Cfe9667cAa2E2fD057A729b5affEAB5525C8b48';
 
 let provider;
 let signer;
@@ -32,12 +37,15 @@ if (typeof window.ethereum !== 'undefined' || (typeof window.web3 !== 'undefined
 }
 
 
+
 function App() {
 	const [selectedStartDate, handleStartDateChange] = useState(new Date());
 	const [selectedEndDate, handleEndDateChange] = useState(new Date());
 	const [walAddress, setWalAddress] = useState('0x00');
 	const [eventsList, setEventsList] = useState([]);
 	const localizer = momentLocalizer(moment);
+	const [open, setOpen] = React.useState(false);
+
 	
 	// Aborts app if metamask etc not present
 	if (noProviderAbort) {
@@ -48,6 +56,15 @@ function App() {
 			</div>
 		);
 	}
+
+  const handleClickOpen = () => {
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
+
 
 	signer.getAddress()
 		.then(response => {
@@ -195,14 +212,46 @@ function App() {
 		</Button>
 
 		</form>
-		<span>TODO: Error message if metamask not connected</span>
-		<h2>Subscribe to this calendar in your email application:</h2>
+		{walAddress === '0x00'
+			?
+			<p>You have not connected your Ethereum account to this application.  Please do so if you wish to add and read events.</p>
+			:
+			<>
+			<h2>Subscribe to this calendar in your email application:</h2>
+			<p>https://ezcontract.hopto.org/api/listen?address={walAddress}</p>
+			<p>actually for testing it is:</p>
+			<p>http://localhost:3305/listen?address={walAddress}</p>
+			<p>Instructions for <a href="https://support.microsoft.com/en-us/office/import-or-subscribe-to-a-calendar-in-outlook-com-cff1429c-5af6-41ec-a5b4-74f2c278e98c">Outlook</a> and <a href="https://support.mozilla.org/en-US/kb/creating-new-calendars#w_icalendar-ics">Thunderbird</a></p>
+			</>
+		}
+		<div>
+      <Button variant="outlined" color="primary" onClick={handleClickOpen}>
+        Open alert dialog
+      </Button>
+      <Dialog
+        open={open}
+        onClose={handleClose}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">{"Use Google's location service?"}</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            Let Google help apps determine location. This means sending anonymous location data to
+            Google, even when no apps are running.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleClose} color="primary">
+            Disagree
+          </Button>
+          <Button onClick={handleClose} color="primary" autoFocus>
+            Agree
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </div>
 
-		<p>https://ezcontract.hopto.org/api/listen?address={walAddress}</p>
-
-		<p>actually for testing it is:</p>
-		<p>http://localhost:3305/listen?address={walAddress}</p>
-		<p>Instructions for <a href="https://support.microsoft.com/en-us/office/import-or-subscribe-to-a-calendar-in-outlook-com-cff1429c-5af6-41ec-a5b4-74f2c278e98c">Outlook</a> and <a href="https://support.mozilla.org/en-US/kb/creating-new-calendars#w_icalendar-ics">Thunderbird</a></p>
 
 
 
