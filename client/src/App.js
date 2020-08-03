@@ -9,7 +9,7 @@ import { MuiPickersUtilsProvider, KeyboardDateTimePicker } from '@material-ui/pi
 import { ethers } from "ethers";
 import CalStore from "./contracts/CalStore.json";
 
-const contractAddress ='0xC4A7e00A7e526611e6B700B3B4a14F60B4181716';
+const contractAddress ='0x182384CA72F49c7e565107b8CD457c123F41Ed9e';
 
 let provider;
 let signer;
@@ -37,7 +37,7 @@ function App() {
 	const [selectedEndDate, handleEndDateChange] = useState(new Date());
 	const [walAddress, setWalAddress] = useState('0x00');
 	const [eventsList, setEventsList] = useState([]);
-	const localizer = momentLocalizer(moment)
+	const localizer = momentLocalizer(moment);
 	
 	// Aborts app if metamask etc not present
 	if (noProviderAbort) {
@@ -54,9 +54,12 @@ function App() {
 			setWalAddress(response);	
 			contractCalStore.getEventsObj(response)
 				.then(msg => {
-					// console.log("msg.length", msg.length);
-					// console.log("eventsList.length", eventsList.length);
-					if (msg[0]  && msg.length >= eventsList.length) { //TODO: Check this is needed when no data is in blockchain now there is a loop too
+					// Ensures blockchain only loaded if:
+					// it exists and
+					// has more data than local version
+					// Latter condition needed as blockchain not immediate,
+					// local version is
+					if (msg[0]  && msg.length > eventsList.length) {
 						let eventArray = [];
 						for (let i = 0; i < msg.length; i++) {
 							let newEvent = {
@@ -83,27 +86,27 @@ function App() {
 
 	const getBlockchainEvent = (event) => { 
 		console.log("Am I triggered???");
-		console.log(eventsList);
-		contractCalStore.getEventsObj(walAddress)
-			.then(msg => {
-				let newEvent = {
-					id: 0,
-					allDay: false,
-					start: new Date(moment.unix(msg[0].dtstart.toNumber())),
-					end: new Date(moment.unix(msg[0].dtend.toNumber())),
-					title: msg[0].description 
-				};
-				console.log(newEvent);
-				setEventsList([...eventsList, newEvent]);
-				console.log(eventsList);
-			});
+			console.log("eventsList:",eventsList.length);
+		// contractCalStore.getEventsObj(walAddress)
+		// 	.then(msg => {
+		// 		let newEvent = {
+		// 			id: 0,
+		// 			allDay: false,
+		// 			start: new Date(moment.unix(msg[0].dtstart.toNumber())),
+		// 			end: new Date(moment.unix(msg[0].dtend.toNumber())),
+		// 			title: msg[0].description 
+		// 		};
+		// 		console.log(newEvent);
+		// 		setEventsList([...eventsList, newEvent]);
+		// 		console.log(eventsList);
+		// 	});
 		event.preventDefault();
 	};
 
 				// console.log(eventsList);
 
+	// Adds item to calendar with drag and drop
 	function handleSelect ({ start, end }) {
-		//TODO: Start here add ethereum magic
 		const title = window.prompt('New Event name')
 		if (title) {
 			var newEvent = {
@@ -111,7 +114,6 @@ function App() {
 				end: end,
 				title: title 
 			}
-			console.log
 			setEventsList([...eventsList, newEvent])
 			let unixStart = moment(start).unix();
 			let unixEnd = moment(end).unix();
@@ -137,6 +139,7 @@ function App() {
 		endAccessor="end"
 		style={{ height: 500 }}
 		onSelectSlot={handleSelect}
+		onSelectEvent={event => alert(event.title)}
 		/>
 		</div>
 
@@ -185,13 +188,14 @@ function App() {
 
 		</div>
 		</form>
-		<h2>Get Block</h2>
+		<h2>Get Block - To delete</h2>
 		<form onSubmit={getBlockchainEvent}>
 		<Button variant="contained" color="primary" type="submit">
 		Submit
 		</Button>
 
 		</form>
+		<span>TODO: Error message if metamask not connected</span>
 		<h2>Subscribe to this calendar in your email application:</h2>
 
 		<p>https://ezcontract.hopto.org/api/listen?address={walAddress}</p>
@@ -208,5 +212,3 @@ function App() {
 
 export default App;
 
-// Old Input calendar buttons
-//
