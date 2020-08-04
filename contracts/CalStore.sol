@@ -16,18 +16,27 @@ contract CalStore  {
         uint uid; // This should by dtstart, plus an id, plus msg.owner Change to string eventually
     }
 
-    VEvent[] private userVEvent;
+    // VEvent[] private userVEvent;
     mapping(address => VEvent[]) private store;
 
     function storeEvent(uint _dtstamp, uint _dtstart, uint _dtend, string memory _summary, string memory _description) public {
-        VEvent[] memory currentData = store[msg.sender];
-        uint nextId = currentData.length + 1;
-        VEvent memory newData = VEvent(_dtstamp, _dtstart, _dtend, _summary, _description, nextId);
-        userVEvent.push(newData);
-        store[msg.sender] = userVEvent;
+        // VEvent[] memory currentData = store[msg.sender];
+        // uint nextId = currentData.length + 1;
+        // VEvent[] memory currentData = store[msg.sender];
+        uint nextId = store[msg.sender].length + 1;
+        VEvent memory newEvent = VEvent(_dtstamp, _dtstart, _dtend, _summary, _description, nextId);
+        store[msg.sender].push(newEvent);
     }
     function justSayHi() public pure returns (string memory) {
         return "Hi";
+    }
+
+    function removeEvent(uint _index) public {
+        // Delete does not change the array length.
+        // It resets the value at index to it's default value,
+        // in this case 0
+        VEvent[] memory currentData = store[msg.sender];
+        delete currentData[_index];
     }
 
     function timestampToDateTime(uint timestamp) public pure returns (uint year, uint month, uint day, uint hour, uint minute, uint second) {
@@ -162,8 +171,8 @@ contract CalStore  {
 // CalStore.deployed().then(function(instance) {app = instance})
 // app.storeEvent(1595170930, 1596121200, 1596123000, "Meeting 1", "First Meeting");
 // app.storeEvent(1595171030, 1596290400, 1596295800, "Meeting 2", "Second Meeting");
-// app.getEventsObj('0x56F1Db4937328D1102273D1192f3094C9Ffb1310');
-// app.getEventsIcal('0x56F1Db4937328D1102273D1192f3094C9Ffb1310');
+// app.getEventsObj('0xE65616E1197298060479799B225a02D06005CA14');
+// app.getEventsIcal('0xE65616E1197298060479799B225a02D06005CA14');
 // app.justSayHi();
 
 // get all accounts: web3.eth.getAccounts().then(console.log)
