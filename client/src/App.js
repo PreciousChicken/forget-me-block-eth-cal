@@ -1,4 +1,4 @@
-import React, { useState  } from 'react';
+import React, { useState, useEffect  } from 'react';
 import './App.css';
 import DateFnsUtils from "@date-io/date-fns";
 import moment from 'moment';
@@ -14,7 +14,7 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 
-const contractAddress ='0xF8859cfC48ea79aa82C39Fc0e3db07fF688C057C';
+const contractAddress ='0xFD151DF1F42C30e24CB9d557F6DFB58237174Ef5';
 
 let provider;
 let signer;
@@ -38,7 +38,9 @@ if (typeof window.ethereum !== 'undefined' || (typeof window.web3 !== 'undefined
 
 
 
+
 function App() {
+	const refreshMinutes = 1; // Changes minutes checks blockchain
 	const [selectedStartDate, handleStartDateChange] = useState(new Date());
 	const [selectedEndDate, handleEndDateChange] = useState(new Date());
 	const [walAddress, setWalAddress] = useState('0x00');
@@ -47,9 +49,24 @@ function App() {
 	const [open, setOpen] = React.useState(false);
 	const [activeEventTitle, setActiveEventTitle] = useState("");
 	const [activeEventDesc, setActiveEventDesc] = useState("");
+	const [activeEventId, setActiveEventId] = useState(0);
 	const [activeEventStart, setActiveEventStart] = useState(new Date());
 	const [activeEventEnd, setActiveEventEnd] = useState(new Date());
-	
+	const [visibleEvents, setVisibleEvents] = useState([]);
+	const [synchronisingEvents, setSyncEvents] = useState([]);
+
+	useEffect(() => {
+		let tempArray = [];
+		for (let i = 0; i < synchronisingEvents.length; i++) {
+			if (synchronisingEvents[i].isVisible === true) {
+				tempArray.push(synchronisingEvents[i]);
+			}
+		}
+		console.log("65 tempArray", tempArray);
+		setVisibleEvents(tempArray);
+	}, [synchronisingEvents]);
+
+
 	// Aborts app if metamask etc not present
 	if (noProviderAbort) {
 		return (
@@ -60,11 +77,117 @@ function App() {
 		);
 	}
 
+	const eventSyncStatus = {
+		BLOCK: 'block',
+		ADD: 'add',
+		DELETE: 'delete',
+	}
 
-  const handleClose = () => {
-    setOpen(false);
-  };
+	function Event(allDay, start, end, title, desc) {
+		this.allDay = allDay;
+		this.start = start;
+		this.end = end;
+		this.title = title;
+		this.description = desc;
+		this.isVisible = true;
+		this.syncStatus = eventSyncStatus.ADD;
+		this.id = moment().unix();
+	}
 
+	// Handles user store message form submit
+	function addEvent (event) {
+		console.log(event.end);
+	// function addEvent ({ start, end, allDay }) { 
+		const title = window.prompt('New Event name');
+		if (title) {
+			let unixStart = moment(event.start).unix();
+			let unixEnd = moment(event.end).unix();
+			let newEvent = new Event(
+				false,
+				event.start, 
+				event.end,
+				title,
+				title
+			);
+			contractCalStore.storeEvent(
+				newEvent.id, 
+				unixStart, 
+				unixEnd, 
+				newEvent.title,
+				newEvent.description
+			).catch(err => alert("Error connecting to blockchain. " + err.message));
+			setSyncEvents([...synchronisingEvents, newEvent]);			
+		}
+	}
+
+	function deleteEvent() {
+		setOpen(false);
+		let deletionsArray = Array.from(synchronisingEvents);
+		console.log("125 deletionsArray", deletionsArray);
+		for (let i = 0; i < deletionsArray.length; i++) { 
+			if (deletionsArray[i].id === activeEventId) { 
+				deletionsArray[i].isVisible = false; 
+				deletionsArray[i].syncStatus = eventSyncStatus.DELETE; 
+			}
+		}
+		console.log("132 deletionsArray", deletionsArray);
+		contractCalStore.removeEvent(activeEventId).catch(err => alert("Error connecting to blockchain. " + err.message));
+		setSyncEvents(deletionsArray);
+	}
+	// Adds item to calendar with drag and drop
+	// function handleSelect ({ start, end }) {
+	// 	const title = window.prompt('New Event name')
+	// 	if (title) {
+	// 		var newEvent = {
+	// 			start: start,
+	// 			end: end,
+	// 			title: title,
+	// 			desc: title
+	// 		}
+	// 		setEventsList([...eventsList, newEvent])
+	// 		let unixStart = moment(start).unix();
+	// 		let unixEnd = moment(end).unix();
+	// 		contractCalStore.storeEvent(moment().unix(), unixStart, unixEnd, title, title);
+	// 	}
+	// }
+
+	const displayClose = () => {
+		setOpen(false);
+	};
+
+	// function deleteSpecificEvent(eventId) {
+	// 	for (let i = 0; i < eventsList.length; i++) { 
+	// 		if ( eventsList[i].id === eventId) { 
+	// 			eventsList.splice(i, 1); 
+	// 		}
+	// 	}
+	// }
+
+	// const deleteEvent = () => {
+	// 	setOpen(false);
+	// 	console.log("active UID", activeEventId);
+	// 	deleteSpecificEvent(activeEventId);
+	// 	contractCalStore.removeEvent(activeEventId).then(
+	// 		contractCalStore.getEventsObj(walAddress).then(msg => {
+	// 			console.log("delmsg", msg);
+	// 			let eventArray = [];
+	// 			for (let i = 0; i < msg.length; i++) {
+	// 				if (msg[i].uid > 0) {
+	// 					let newEvent = {
+	// 						id: msg[i].uid.toNumber(),
+	// 						allDay: false,
+	// 						start: new Date(moment.unix(msg[i].dtstart.toNumber())),
+	// 						end: new Date(moment.unix(msg[i].dtend.toNumber())),
+	// 						title: msg[i].summary,
+	// 						desc: msg[i].description 
+	// 					};
+	// 					eventArray.push(newEvent);
+	// 				}
+	// 			}
+	// 			setEventsList(eventArray);
+	// 		})
+	// 	);
+	// };
 
 	signer.getAddress()
 		.then(response => {
@@ -79,28 +202,23 @@ function App() {
 					if (msg[0]  && msg.length > eventsList.length) {
 						let eventArray = [];
 						for (let i = 0; i < msg.length; i++) {
-							let newEvent = {
-								id: i,
-								allDay: false,
-								start: new Date(moment.unix(msg[i].dtstart.toNumber())),
-								end: new Date(moment.unix(msg[i].dtend.toNumber())),
-								title: msg[i].summary,
-								desc: msg[i].description 
-							};
-							eventArray.push(newEvent);
+							if (msg[i].uid > 0) {
+								let neEvent = {
+									id: msg[i].uid.toNumber(),
+									allDay: false,
+									start: new Date(moment.unix(msg[i].dtstart.toNumber())),
+									end: new Date(moment.unix(msg[i].dtend.toNumber())),
+									title: msg[i].summary,
+									desc: msg[i].description 
+								};
+								eventArray.push(neEvent);
+							}
 						}
 						setEventsList(eventArray);
 					}
 				})
 		});
 
-	// Handles user store message form submit
-	const handleNewEvent = (event) => { 
-		let unixStart = moment(selectedStartDate).unix();
-		let unixEnd = moment(selectedEndDate).unix();
-		contractCalStore.storeEvent(moment().unix(), unixStart, unixEnd, event.target.title.value,event.target.description.value);
-		event.preventDefault();
-	};
 
 	const getBlockchainEvent = (event) => { 
 		console.log("Am I triggered???");
@@ -123,29 +241,15 @@ function App() {
 
 				// console.log(eventsList);
 
-	// Adds item to calendar with drag and drop
-	function handleSelect ({ start, end }) {
-		const title = window.prompt('New Event name')
-		if (title) {
-			var newEvent = {
-				start: start,
-				end: end,
-				title: title,
-				desc: title
-			}
-			setEventsList([...eventsList, newEvent])
-			let unixStart = moment(start).unix();
-			let unixEnd = moment(end).unix();
-			contractCalStore.storeEvent(moment().unix(), unixStart, unixEnd, title, title);
-		}
-	}
 
 	function displayEvent( event ) {
+		setActiveEventId(event.id);
 		setActiveEventTitle(event.title);
 		setActiveEventDesc(event.desc);
 		setActiveEventStart(event.start);
 		setActiveEventEnd(event.end);
     setOpen(true);
+		console.log(event.id);
 	}
 
 
@@ -162,17 +266,17 @@ function App() {
 		defaultView="week"
 		defaultDate={new Date()}
 		localizer={localizer}
-		events={eventsList}
+		events={visibleEvents}
 		startAccessor="start"
 		endAccessor="end"
 		style={{ height: 500 }}
-		onSelectSlot={handleSelect}
+		onSelectSlot={addEvent}
 		onSelectEvent={displayEvent}
 		/>
 		</div>
 
 		<h2>New event:</h2>
-		<form onSubmit={handleNewEvent}>
+		<form>
 
 		<div className="block-element">
 		<TextField 
@@ -238,7 +342,7 @@ function App() {
 		<div>
       <Dialog
         open={open}
-        onClose={handleClose}
+        onClose={displayClose}
         aria-labelledby="alert-dialog-title"
         aria-describedby="alert-dialog-description"
       >
@@ -251,10 +355,10 @@ function App() {
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose} color="primary">
+          <Button onClick={deleteEvent} color="primary">
             Delete
           </Button>
-          <Button onClick={handleClose} color="primary" autoFocus>
+          <Button onClick={displayClose} color="primary" autoFocus>
             OK
           </Button>
         </DialogActions>
@@ -270,3 +374,12 @@ function App() {
 
 export default App;
 
+	// Refreshes page, calls check for new unlocked data on blockchain
+	// useEffect(() => {
+	// 	const interval = setInterval(() => {
+	// 		setSyncEvents("Hello!!", () => console.log("Hello???", synchronisingEvents));			
+	// 		copySynchronisingToVisible();
+	// 		// setRefreshTime(moment().add(refreshMinutes, 'minutes').format("HH:mm"));
+	// 	}, (refreshMinutes * 60000));
+	// 	return () => clearInterval(interval);
+	// }, []);
