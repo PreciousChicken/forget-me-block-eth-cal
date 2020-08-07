@@ -78,9 +78,9 @@ function App() {
 	}
 
 	const eventSyncStatus = {
-		BLOCK: 'block',
-		ADD: 'add',
-		DELETE: 'delete',
+		BLOCK: 'block', // Exists in blockchain
+		ADD: 'add', // Added in React, not yet in blockchain
+		DELETE: 'delete', // Deleted in react, not yet deleted from blockchain
 	}
 
 	function Event(allDay, start, end, title, desc) {
@@ -193,30 +193,54 @@ function App() {
 		.then(response => {
 			setWalAddress(response);	
 			contractCalStore.getEventsObj(response)
-				.then(msg => {
+				.then(blockEvents => {
+					let currentArray = Array.from(synchronisingEvents);
+					let updatedArray = [];
+					if (blockEvents[0]) {
+						setSyncEvents(updatedArray);
+					}
+
+
+
+						// for (let i = 0; i < blockEvents.length; i++) {
+						// 	for (let j = 0; j <synchronisingEvents.length; j++) {
+						// 		if (blockEvents[i].dtstamp === synchronisingEvents[j].id) {
+						// 			if (synchronisingEvents[j].status === eventSyncStatus.ADD ||
+						// 				synchronisingEvents[j].status === eventSyncStatus.BLOCK) {
+						// 				updateArray.push(synchronisingEvents[j]);
+						// 				updateArray[updateArray.length-1].status = eventSyncStatus.BLOCK;
+						// 				updateArray[updateArray.length-1].isVisible = true;
+						// 			}
+						// 		} else { // In synchEvents, not in blockEvents
+						// 			if (synchronisingEvents[j].status === eventSyncStatus.ADD) {
+						// 				updateArray.push(synchronisingEvents[j]);
+						// 			}
+						// 		}
+						// 	}
+						// }
 					// Ensures blockchain only loaded if:
 					// it exists and
 					// has more data than local version
 					// Latter condition needed as blockchain not immediate,
 					// local version is
-					if (msg[0]  && msg.length > eventsList.length) {
-						let eventArray = [];
-						for (let i = 0; i < msg.length; i++) {
-							if (msg[i].uid > 0) {
-								let neEvent = {
-									id: msg[i].uid.toNumber(),
-									allDay: false,
-									start: new Date(moment.unix(msg[i].dtstart.toNumber())),
-									end: new Date(moment.unix(msg[i].dtend.toNumber())),
-									title: msg[i].summary,
-									desc: msg[i].description 
-								};
-								eventArray.push(neEvent);
-							}
-						}
-						setEventsList(eventArray);
+					// if (msg[0]  && msg.length > eventsList.length) {
+					// 	let eventArray = [];
+					// 	for (let i = 0; i < msg.length; i++) {
+					// 		if (msg[i].uid > 0) {
+					// 			let neEvent = {
+					// 				id: msg[i].uid.toNumber(),
+					// 				allDay: false,
+					// 				start: new Date(moment.unix(msg[i].dtstart.toNumber())),
+					// 				end: new Date(moment.unix(msg[i].dtend.toNumber())),
+					// 				title: msg[i].summary,
+					// 				desc: msg[i].description 
+					// 			};
+					// 			eventArray.push(neEvent);
+					// 		}
+					// 	}
+					// 	setEventsList(eventArray);
 					}
-				})
+				)
 		});
 
 
