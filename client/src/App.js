@@ -1,11 +1,9 @@
 import React, { useState, useEffect  } from 'react';
 import './App.css';
-import DateFnsUtils from "@date-io/date-fns";
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { Calendar, momentLocalizer } from 'react-big-calendar'
-import { Button, TextField } from '@material-ui/core';
-import { MuiPickersUtilsProvider, KeyboardDateTimePicker } from '@material-ui/pickers';
+import { Button } from '@material-ui/core';
 import { ethers } from "ethers";
 import CalStore from "./contracts/CalStore.json";
 import Dialog from '@material-ui/core/Dialog';
@@ -36,15 +34,10 @@ if (typeof window.ethereum !== 'undefined' || (typeof window.web3 !== 'undefined
 	}
 }
 
-
-
-
 function App() {
-	const [selectedStartDate, handleStartDateChange] = useState(new Date());
-	const [selectedEndDate, handleEndDateChange] = useState(new Date());
-	const [walAddress, setWalAddress] = useState('0x00');
 	const localizer = momentLocalizer(moment);
-	const [open, setOpen] = React.useState(false);
+	const [walAddress, setWalAddress] = useState('0x00');
+	const [open, setOpen] = useState(false);
 	const [activeEventTitle, setActiveEventTitle] = useState("");
 	const [activeEventDesc, setActiveEventDesc] = useState("");
 	const [activeEventId, setActiveEventId] = useState(0);
@@ -53,67 +46,36 @@ function App() {
 	const [visibleEvents, setVisibleEvents] = useState([]);
 	const [synchronisingEvents, setSyncEvents] = useState([]);
 
-	useEffect(() => checkBlockchain(), []);
-
-	function checkBlockchain() {
-		let currentArray = Array.from(synchronisingEvents);
-		console.log("current Array 145:", currentArray);
+	// Updates React with blockchain events and wallet address on page opening
+	useEffect(() => {
 		let updatedArray = [];
-			signer.getAddress()
-				.then(response => {
-					setWalAddress(response);	
-					contractCalStore.getEventsObj(response)
-						.then(blockEvents => {
-							if (blockEvents[0]) {
-								for (let i = blockEvents.length-1; i >= 0; i--) {
-									for (let j = currentArray.length-1; j >= 0; j--) {
-										if (blockEvents[i].dtstamp === currentArray[j].id) {
-											if (currentArray[j].status !== eventSyncStatus.DELETE) {
-												updatedArray.push(currentArray[j]);
-												updatedArray[updatedArray.length-1].status = eventSyncStatus.BLOCK;
-												updatedArray[updatedArray.length-1].isVisible = true;
-												updatedArray[updatedArray.length-1].uid = blockEvents[i].uid.toNumber();
-												currentArray.splice(j, 1); 
-											}
-
-											blockEvents.splice(i, 1); // Removes all matched events from block
-											//TODO: This isn't going to work as in a funny shape!!!
-										
-										}
-									}
-								}
-								// Synchs events remaining in block only 
-								for (let i = 0; i < blockEvents.length; i++) {
-									let newEvent = new Event(
-										false, 
-										new Date(moment.unix(blockEvents[i].dtstart.toNumber())), 
-										new Date(moment.unix(blockEvents[i].dtend.toNumber())), 
-										blockEvents[i].summary, 
-										blockEvents[i].description, 
-										eventSyncStatus.BLOCK, 
-										blockEvents[i].dtstamp.toNumber());
-									newEvent.uid = blockEvents[i].uid;
-									updatedArray.push(newEvent);
-								}
-								// Synchs ADD events remaining in react only 
-								for (let i = 0; i < currentArray.length; i++) {
-									if (currentArray[i].status === eventSyncStatus.ADD) {
-										updatedArray.push(currentArray[i]);
-									}
-								}
-							} else { // blockEvents empty
-								for (let j = currentArray.length-1; j >= 0; j--) {
-									if (currentArray[j].status === eventSyncStatus.ADD) {
-										updatedArray.push(currentArray[j]);
-									}
-								}
+		signer.getAddress()
+			.then(response => {
+				setWalAddress(response);	
+				contractCalStore.getEventsObj(response)
+					.then(blockEvents => {
+						if (blockEvents[0]) {
+							// Synchs events remaining in block only 
+							for (let i = 0; i < blockEvents.length; i++) {
+								let newEvent = new Event(
+									false, 
+									new Date(moment.unix(blockEvents[i].dtstart.toNumber())), 
+									new Date(moment.unix(blockEvents[i].dtend.toNumber())), 
+									blockEvents[i].summary, 
+									blockEvents[i].description, 
+									blockEvents[i].dtstamp.toNumber());
+								newEvent.uid = blockEvents[i].uid;
+								updatedArray.push(newEvent);
 							}
-							console.log("Updated Array 196:", updatedArray);
 							setSyncEvents(updatedArray);
-						})
-				});
-		}
+						}
+					})
+			});
+	}, []);
 
+
+	// Copies events from synch to visible depending
+	// isVisible flag
 	useEffect(() => {
 		let tempArray = [];
 		for (let i = 0; i < synchronisingEvents.length; i++) {
@@ -135,27 +97,20 @@ function App() {
 		);
 	}
 
-	const eventSyncStatus = {
-		BLOCK: 'block', // Exists in blockchain
-		ADD: 'add', // Added in React, not yet in blockchain
-		DELETE: 'delete', // Deleted in react, not yet deleted from blockchain
-	}
-
-	function Event(allDay, start, end, title, desc, syncStatus, id) {
+	// Object representing Event within React
+	function Event(allDay, start, end, title, desc, id) {
 		this.allDay = allDay;
 		this.start = start;
 		this.end = end;
 		this.title = title;
 		this.description = desc;
-		this.syncStatus = syncStatus;
 		this.id = id; // dtstamp in block, not uid
 		this.uid = 0; // uid in block
 		this.isVisible = true;
 	}
 
-	// Handles user store message form submit
+	// Adds event when dropped on React calendar
 	function addEvent (event) {
-	// function addEvent ({ start, end, allDay }) { 
 		const title = window.prompt('New Event name');
 		if (title) {
 			let unixStart = moment(event.start).unix();
@@ -166,7 +121,6 @@ function App() {
 				event.end,
 				title,
 				title,
-				eventSyncStatus.ADD,
 				moment().unix()
 			);
 			setSyncEvents([...synchronisingEvents, newEvent]);			
@@ -180,35 +134,30 @@ function App() {
 		}
 	}
 
+	// Deletes event when deleted on React calendar
 	function deleteEvent() {
 		setOpen(false);
 		let deletionsArray = Array.from(synchronisingEvents);
 		for (let i = 0; i < deletionsArray.length; i++) { 
 			if (deletionsArray[i].id === activeEventId) { 
 				deletionsArray[i].isVisible = false; 
-				deletionsArray[i].syncStatus = eventSyncStatus.DELETE; 
 			}
 		}
 		setSyncEvents(deletionsArray);
 		contractCalStore.removeEvent(activeEventId).catch(err => alert("Error connecting to blockchain. " + err.message));
 	}
 
-	const displayClose = () => {
+	// Closes Event display dialog
+	function displayClose() {
 		setOpen(false);
-	};
+	}
 
 
-
-
-	const getBlockchainEvent = (event) => { 
-		checkBlockchain();
-		event.preventDefault();
-	};
-
+	// Opens Event display dialog
 	function displayEvent( event ) {
 		setActiveEventId(event.id);
 		setActiveEventTitle(event.title);
-		setActiveEventDesc(event.desc);
+		setActiveEventDesc(event.description);
 		setActiveEventStart(event.start);
 		setActiveEventEnd(event.end);
     setOpen(true);
@@ -232,58 +181,6 @@ function App() {
 		/>
 		</div>
 
-		<h2>New event:</h2>
-		<form>
-
-		<div className="block-element">
-		<TextField 
-		name="title" id="outlined-basic" label="Title" variant="outlined" />
-		</div>
-		<div className="block-element">
-		<MuiPickersUtilsProvider utils={DateFnsUtils}>	
-		<KeyboardDateTimePicker 
-		format="yyyy-MM-dd HH:mm"
-		ampm="false"
-		label="Start"
-		inputVariant="outlined"
-		value={selectedStartDate} onChange={handleStartDateChange} />
-		</MuiPickersUtilsProvider>
-		</div>
-		<div className="block-element">
-		<MuiPickersUtilsProvider utils={DateFnsUtils}>	
-		<KeyboardDateTimePicker 
-		format="yyyy-MM-dd HH:mm"
-		ampm="false"
-		label="End"
-		inputVariant="outlined"
-		value={selectedEndDate} onChange={handleEndDateChange} />
-		</MuiPickersUtilsProvider>
-		</div>
-		<div className="block-element">
-		<TextField
-		name="description"      
-		id="outlined-multiline-static"
-		label="Description"
-		style = {{width: 450}}
-		multiline
-		rows={4}
-		variant="outlined"
-		/>
-		</div>
-		<div className="block-element">
-		<Button variant="contained" color="primary" type="submit">
-		Submit
-		</Button>
-
-		</div>
-		</form>
-		<h2>Get Block - To delete</h2>
-		<form onSubmit={getBlockchainEvent}>
-		<Button variant="contained" color="primary" type="submit">
-		Submit
-		</Button>
-
-		</form>
 		{walAddress === '0x00'
 			?
 			<p>You have not connected your Ethereum account to this application.  Please do so if you wish to add and read events.</p>
@@ -322,21 +219,9 @@ function App() {
       </Dialog>
     </div>
 
-
-
-
 		</main>
 	);
 }
 
 export default App;
 
-	// Refreshes page, calls check for new unlocked data on blockchain
-	// useEffect(() => {
-	// 	const interval = setInterval(() => {
-	// 		setSyncEvents("Hello!!", () => console.log("Hello???", synchronisingEvents));			
-	// 		copySynchronisingToVisible();
-	// 		// setRefreshTime(moment().add(refreshMinutes, 'minutes').format("HH:mm"));
-	// 	}, (refreshMinutes * 60000));
-	// 	return () => clearInterval(interval);
-	// }, []);
