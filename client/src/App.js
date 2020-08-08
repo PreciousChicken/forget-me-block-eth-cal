@@ -14,7 +14,7 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 
-const contractAddress ='0xFD151DF1F42C30e24CB9d557F6DFB58237174Ef5';
+const contractAddress ='0x1D294B6964F0555Db93e4A325329A0049f7cba8E';
 
 let provider;
 let signer;
@@ -40,11 +40,9 @@ if (typeof window.ethereum !== 'undefined' || (typeof window.web3 !== 'undefined
 
 
 function App() {
-	const refreshMinutes = 1; // Changes minutes checks blockchain
 	const [selectedStartDate, handleStartDateChange] = useState(new Date());
 	const [selectedEndDate, handleEndDateChange] = useState(new Date());
 	const [walAddress, setWalAddress] = useState('0x00');
-	const [eventsList, setEventsList] = useState([]);
 	const localizer = momentLocalizer(moment);
 	const [open, setOpen] = React.useState(false);
 	const [activeEventTitle, setActiveEventTitle] = useState("");
@@ -55,6 +53,67 @@ function App() {
 	const [visibleEvents, setVisibleEvents] = useState([]);
 	const [synchronisingEvents, setSyncEvents] = useState([]);
 
+	useEffect(() => checkBlockchain(), []);
+
+	function checkBlockchain() {
+		let currentArray = Array.from(synchronisingEvents);
+		console.log("current Array 145:", currentArray);
+		let updatedArray = [];
+			signer.getAddress()
+				.then(response => {
+					setWalAddress(response);	
+					contractCalStore.getEventsObj(response)
+						.then(blockEvents => {
+							if (blockEvents[0]) {
+								for (let i = blockEvents.length-1; i >= 0; i--) {
+									for (let j = currentArray.length-1; j >= 0; j--) {
+										if (blockEvents[i].dtstamp === currentArray[j].id) {
+											if (currentArray[j].status !== eventSyncStatus.DELETE) {
+												updatedArray.push(currentArray[j]);
+												updatedArray[updatedArray.length-1].status = eventSyncStatus.BLOCK;
+												updatedArray[updatedArray.length-1].isVisible = true;
+												updatedArray[updatedArray.length-1].uid = blockEvents[i].uid.toNumber();
+												currentArray.splice(j, 1); 
+											}
+
+											blockEvents.splice(i, 1); // Removes all matched events from block
+											//TODO: This isn't going to work as in a funny shape!!!
+										
+										}
+									}
+								}
+								// Synchs events remaining in block only 
+								for (let i = 0; i < blockEvents.length; i++) {
+									let newEvent = new Event(
+										false, 
+										new Date(moment.unix(blockEvents[i].dtstart.toNumber())), 
+										new Date(moment.unix(blockEvents[i].dtend.toNumber())), 
+										blockEvents[i].summary, 
+										blockEvents[i].description, 
+										eventSyncStatus.BLOCK, 
+										blockEvents[i].dtstamp.toNumber());
+									newEvent.uid = blockEvents[i].uid;
+									updatedArray.push(newEvent);
+								}
+								// Synchs ADD events remaining in react only 
+								for (let i = 0; i < currentArray.length; i++) {
+									if (currentArray[i].status === eventSyncStatus.ADD) {
+										updatedArray.push(currentArray[i]);
+									}
+								}
+							} else { // blockEvents empty
+								for (let j = currentArray.length-1; j >= 0; j--) {
+									if (currentArray[j].status === eventSyncStatus.ADD) {
+										updatedArray.push(currentArray[j]);
+									}
+								}
+							}
+							console.log("Updated Array 196:", updatedArray);
+							setSyncEvents(updatedArray);
+						})
+				});
+		}
+
 	useEffect(() => {
 		let tempArray = [];
 		for (let i = 0; i < synchronisingEvents.length; i++) {
@@ -62,7 +121,6 @@ function App() {
 				tempArray.push(synchronisingEvents[i]);
 			}
 		}
-		console.log("65 tempArray", tempArray);
 		setVisibleEvents(tempArray);
 	}, [synchronisingEvents]);
 
@@ -83,20 +141,20 @@ function App() {
 		DELETE: 'delete', // Deleted in react, not yet deleted from blockchain
 	}
 
-	function Event(allDay, start, end, title, desc) {
+	function Event(allDay, start, end, title, desc, syncStatus, id) {
 		this.allDay = allDay;
 		this.start = start;
 		this.end = end;
 		this.title = title;
 		this.description = desc;
+		this.syncStatus = syncStatus;
+		this.id = id; // dtstamp in block, not uid
+		this.uid = 0; // uid in block
 		this.isVisible = true;
-		this.syncStatus = eventSyncStatus.ADD;
-		this.id = moment().unix();
 	}
 
 	// Handles user store message form submit
 	function addEvent (event) {
-		console.log(event.end);
 	// function addEvent ({ start, end, allDay }) { 
 		const title = window.prompt('New Event name');
 		if (title) {
@@ -107,164 +165,45 @@ function App() {
 				event.start, 
 				event.end,
 				title,
-				title
+				title,
+				eventSyncStatus.ADD,
+				moment().unix()
 			);
+			setSyncEvents([...synchronisingEvents, newEvent]);			
 			contractCalStore.storeEvent(
 				newEvent.id, 
 				unixStart, 
 				unixEnd, 
 				newEvent.title,
 				newEvent.description
-			).catch(err => alert("Error connecting to blockchain. " + err.message));
-			setSyncEvents([...synchronisingEvents, newEvent]);			
+			).catch(err => alert("Error connecting to blockchain. " + err.message))
 		}
 	}
 
 	function deleteEvent() {
 		setOpen(false);
 		let deletionsArray = Array.from(synchronisingEvents);
-		console.log("125 deletionsArray", deletionsArray);
 		for (let i = 0; i < deletionsArray.length; i++) { 
 			if (deletionsArray[i].id === activeEventId) { 
 				deletionsArray[i].isVisible = false; 
 				deletionsArray[i].syncStatus = eventSyncStatus.DELETE; 
 			}
 		}
-		console.log("132 deletionsArray", deletionsArray);
-		contractCalStore.removeEvent(activeEventId).catch(err => alert("Error connecting to blockchain. " + err.message));
 		setSyncEvents(deletionsArray);
+		contractCalStore.removeEvent(activeEventId).catch(err => alert("Error connecting to blockchain. " + err.message));
 	}
-	// Adds item to calendar with drag and drop
-	// function handleSelect ({ start, end }) {
-	// 	const title = window.prompt('New Event name')
-	// 	if (title) {
-	// 		var newEvent = {
-	// 			start: start,
-	// 			end: end,
-	// 			title: title,
-	// 			desc: title
-	// 		}
-	// 		setEventsList([...eventsList, newEvent])
-	// 		let unixStart = moment(start).unix();
-	// 		let unixEnd = moment(end).unix();
-	// 		contractCalStore.storeEvent(moment().unix(), unixStart, unixEnd, title, title);
-	// 	}
-	// }
 
 	const displayClose = () => {
 		setOpen(false);
 	};
 
-	// function deleteSpecificEvent(eventId) {
-	// 	for (let i = 0; i < eventsList.length; i++) { 
-	// 		if ( eventsList[i].id === eventId) { 
-	// 			eventsList.splice(i, 1); 
-	// 		}
-	// 	}
-	// }
 
-	// const deleteEvent = () => {
-	// 	setOpen(false);
-	// 	console.log("active UID", activeEventId);
-	// 	deleteSpecificEvent(activeEventId);
-	// 	contractCalStore.removeEvent(activeEventId).then(
-	// 		contractCalStore.getEventsObj(walAddress).then(msg => {
-	// 			console.log("delmsg", msg);
-	// 			let eventArray = [];
-	// 			for (let i = 0; i < msg.length; i++) {
-	// 				if (msg[i].uid > 0) {
-	// 					let newEvent = {
-	// 						id: msg[i].uid.toNumber(),
-	// 						allDay: false,
-	// 						start: new Date(moment.unix(msg[i].dtstart.toNumber())),
-	// 						end: new Date(moment.unix(msg[i].dtend.toNumber())),
-	// 						title: msg[i].summary,
-	// 						desc: msg[i].description 
-	// 					};
-	// 					eventArray.push(newEvent);
-	// 				}
-	// 			}
-	// 			setEventsList(eventArray);
-	// 		})
-	// 	);
-	// };
-
-	signer.getAddress()
-		.then(response => {
-			setWalAddress(response);	
-			contractCalStore.getEventsObj(response)
-				.then(blockEvents => {
-					let currentArray = Array.from(synchronisingEvents);
-					let updatedArray = [];
-					if (blockEvents[0]) {
-						setSyncEvents(updatedArray);
-					}
-
-
-
-						// for (let i = 0; i < blockEvents.length; i++) {
-						// 	for (let j = 0; j <synchronisingEvents.length; j++) {
-						// 		if (blockEvents[i].dtstamp === synchronisingEvents[j].id) {
-						// 			if (synchronisingEvents[j].status === eventSyncStatus.ADD ||
-						// 				synchronisingEvents[j].status === eventSyncStatus.BLOCK) {
-						// 				updateArray.push(synchronisingEvents[j]);
-						// 				updateArray[updateArray.length-1].status = eventSyncStatus.BLOCK;
-						// 				updateArray[updateArray.length-1].isVisible = true;
-						// 			}
-						// 		} else { // In synchEvents, not in blockEvents
-						// 			if (synchronisingEvents[j].status === eventSyncStatus.ADD) {
-						// 				updateArray.push(synchronisingEvents[j]);
-						// 			}
-						// 		}
-						// 	}
-						// }
-					// Ensures blockchain only loaded if:
-					// it exists and
-					// has more data than local version
-					// Latter condition needed as blockchain not immediate,
-					// local version is
-					// if (msg[0]  && msg.length > eventsList.length) {
-					// 	let eventArray = [];
-					// 	for (let i = 0; i < msg.length; i++) {
-					// 		if (msg[i].uid > 0) {
-					// 			let neEvent = {
-					// 				id: msg[i].uid.toNumber(),
-					// 				allDay: false,
-					// 				start: new Date(moment.unix(msg[i].dtstart.toNumber())),
-					// 				end: new Date(moment.unix(msg[i].dtend.toNumber())),
-					// 				title: msg[i].summary,
-					// 				desc: msg[i].description 
-					// 			};
-					// 			eventArray.push(neEvent);
-					// 		}
-					// 	}
-					// 	setEventsList(eventArray);
-					}
-				)
-		});
 
 
 	const getBlockchainEvent = (event) => { 
-		console.log("Am I triggered???");
-			console.log("eventsList:",eventsList.length);
-		// contractCalStore.getEventsObj(walAddress)
-		// 	.then(msg => {
-		// 		let newEvent = {
-		// 			id: 0,
-		// 			allDay: false,
-		// 			start: new Date(moment.unix(msg[0].dtstart.toNumber())),
-		// 			end: new Date(moment.unix(msg[0].dtend.toNumber())),
-		// 			title: msg[0].description 
-		// 		};
-		// 		console.log(newEvent);
-		// 		setEventsList([...eventsList, newEvent]);
-		// 		console.log(eventsList);
-		// 	});
+		checkBlockchain();
 		event.preventDefault();
 	};
-
-				// console.log(eventsList);
-
 
 	function displayEvent( event ) {
 		setActiveEventId(event.id);
@@ -273,18 +212,12 @@ function App() {
 		setActiveEventStart(event.start);
 		setActiveEventEnd(event.end);
     setOpen(true);
-		console.log(event.id);
 	}
-
-
-
-		// onSelectEvent={event => alert(event.title)}
 
 	return (
 		<main>
 		<h1>Forget-me-Block: Ethereum Calendar</h1>
 		<div>
-		<span>eventsList: </span>
 		<Calendar
 		selectable
 		defaultView="week"

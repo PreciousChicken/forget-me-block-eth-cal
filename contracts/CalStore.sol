@@ -29,10 +29,10 @@ contract CalStore  {
         return "Hi";
     }
 
-    function removeEvent(uint _uid) public {
+    function removeEvent(uint _dtstamp) public {
         uint storeLen = store[msg.sender].length;
         for (uint i = 0; i < storeLen; i++) {
-            if (store[msg.sender][i].uid == _uid) {
+            if (store[msg.sender][i].dtstamp == _dtstamp) {
                 // Move the last element into the place to delete
                 store[msg.sender][i] = store[msg.sender][storeLen - 1];
                 // Remove the last element
@@ -168,9 +168,11 @@ contract CalStore  {
 }
 
 // CalStore.deployed().then(function(instance) {app = instance})
+// let accounts = await web3.eth.getAccounts()
+
 // app.storeEvent(1595170930, 1596121200, 1596123000, "Meeting 1", "First Meeting");
 // app.storeEvent(1595171030, 1596290400, 1596295800, "Meeting 2", "Second Meeting");
-// app.getEventsObj('0x90Be3744A1248eb82d7d7e323525D32F21B4d90d');
+// app.getEventsObj(accounts[0]);
 // app.getEventsIcal('0xE65616E1197298060479799B225a02D06005CA14');
 // app.justSayHi();
 
