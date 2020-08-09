@@ -18,7 +18,7 @@ const provider = ethers.providers.getDefaultProvider(url);
 
 
 
-const contractAddress ='0x58A5d6F0DB34d4616D8343704264c12fD44C0dfd';
+const contractAddress ='0xFf939bda9F08e1b37C6de2326B8f7bc7fa4Db613';
 var express = require('express')
 var cors = require('cors')
 var app = express()
@@ -35,10 +35,15 @@ const vCalFooter = "END:VCALENDAR\n"
 var event, dtstamp, uid, dtstart, dtend, summary, description; 
 
 
+async function getIcalEvent(userAddress) {
+	let outputString = "";
+	outputString = await contract.getEventsIcal(userAddress);
+	return outputString;
+}
 
 async function getEvent(userAddress) {
 	let outputString = "";
-	event = await contract.getEvents(userAddress);
+	event = await contract.getEventsObj(userAddress);
 	for (let i = 0; i < event.length; i++) {
 		dtstamp = moment.unix(event[i].dtstamp).format("YYYYMMDD[T]HHmmss");
 		uid = event[i].uid;
@@ -84,6 +89,16 @@ app.get('/listen', (req, res) => {
 	// return res.send("Hello");
 });
 
+app.get('/ical', (req, res) => {
+	const { address } = req.query;
+	let iCal;
+	// getEvent(address).then(cal => {iCal = cal});
+	getIcalEvent(address).then(cal => {return res.send(cal)});
+	console.log('API listen');
+	console.log(address);
+	// res.send('API listen send')
+	// return res.send("Hello");
+});
 
 // getEvent("0x43126483FA825ED8F9E8a75Bee4CC57Ba1f2cFa2");
 app.listen(3305, () => {

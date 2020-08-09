@@ -913,12 +913,12 @@
     "5777": {
       "events": {},
       "links": {},
-      "address": "0xaadC8f281cD5Fdfcc3C48c2241B8Dd9372a9B3d3",
-      "transactionHash": "0xed50d8923dce1af2d98077f4f6582af90602f31293df3a233855fa0234a46d70"
+      "address": "0xd2915DbE3a82EB95059FB0012e027Ec430ddEDe9",
+      "transactionHash": "0x7c110e4e7aecb2ca9877433dba55d4ac8df30850513ae9095663f5ebf9ab239b"
     }
   },
   "schemaVersion": "3.0.23",
-  "updatedAt": "2020-08-09T14:47:04.900Z",
+  "updatedAt": "2020-08-09T20:07:04.685Z",
   "networkType": "ethereum",
   "devdoc": {
     "methods": {}

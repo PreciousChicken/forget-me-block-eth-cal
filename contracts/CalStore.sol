@@ -14,18 +14,37 @@ contract CalStore  {
         string summary;
         string description;
         bool isallday;
+        string alldaystartdate;
+        string alldayenddate;
         uint uid; // This should by dtstart, plus an id, plus msg.owner Change to string eventually
     }
 
     mapping(address => VEvent[]) private store;
     mapping(address => uint) private count;
 
-    function storeEvent(uint _dtstamp, uint _dtstart, uint _dtend, string memory _summary, string memory _description, bool _isallday) public {
+
+    function storeEvent(
+        uint _dtstamp, uint _dtstart, uint _dtend,
+        string memory _summary, string memory _description,
+        bool _isallday, string memory _alldaystartdate,
+        string memory _alldayenddate)
+        public
+        {
         count[msg.sender]++;
         uint nextId = count[msg.sender];
-        VEvent memory newEvent = VEvent(_dtstamp, _dtstart, _dtend, _summary, _description,  _isallday, nextId);
+        VEvent memory newEvent = VEvent(
+            _dtstamp,
+            _dtstart,
+            _dtend,
+            _summary,
+            _description,
+            _isallday,
+            _alldaystartdate,
+            _alldayenddate,
+            nextId);
         store[msg.sender].push(newEvent);
     }
+
     function justSayHi() public pure returns (string memory) {
         return "Hi";
     }
@@ -61,16 +80,29 @@ contract CalStore  {
         for (uint i = 0; i < ownerEvent.length; i++) {
             string memory dtstamp = unixTimeToStr(ownerEvent[i].dtstamp);
             string memory uid = uintToStr(ownerEvent[i].uid);
-            string memory dtstart = unixTimeToStr(ownerEvent[i].dtstart);
-            string memory dtend = unixTimeToStr(ownerEvent[i].dtend);
             string memory summary = ownerEvent[i].summary;
             string memory description = ownerEvent[i].description;
+            string memory allday;
+            string memory dtstart;
+            string memory dtend;
+            string memory utcmark;
+            if (ownerEvent[i].isallday) {
+                allday = ";VALUE=DATE:";
+                dtstart = ownerEvent[i].alldaystartdate;
+                dtend = ownerEvent[i].alldayenddate;
+                utcmark = "";
+            } else {
+                allday = ":";
+                dtstart = unixTimeToStr(ownerEvent[i].dtstart);
+                dtend = unixTimeToStr(ownerEvent[i].dtend);
+                utcmark = "Z";
+            }
             outputString = string(
                 abi.encodePacked(outputString,"BEGIN:VEVENT\n",
                                  "DTSTAMP:", dtstamp, "\n",
                                  "UID:", uid, "@", ownerStr, "\n",
-                                 "DTSTART:", dtstart, "\n",
-                                 "DTEND:", dtend, "\n",
+                                 "DTSTART", allday, dtstart, utcmark, "\n",
+                                 "DTEND", allday, dtend, utcmark, "\n",
                                  "SUMMARY:", summary, "\n",
                                  "DESCRIPTION:", description, "\n",
                                  "END:VEVENT\n"
@@ -174,7 +206,7 @@ contract CalStore  {
 // app.storeEvent(1595170930, 1596121200, 1596123000, "Meeting 1", "First Meeting");
 // app.storeEvent(1595171030, 1596290400, 1596295800, "Meeting 2", "Second Meeting");
 // app.getEventsObj(accounts[0]);
-// app.getEventsIcal('0xE65616E1197298060479799B225a02D06005CA14');
+// app.getEventsIcal(accounts[0]);
 // app.justSayHi();
 
 // get all accounts: web3.eth.getAccounts().then(console.log)

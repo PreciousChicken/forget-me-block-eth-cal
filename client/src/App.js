@@ -13,7 +13,7 @@ import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import TextField from '@material-ui/core/TextField';
 
-const contractAddress ='0xA4412071370515D33a0315e6E2E47584b88B33d7';
+const contractAddress ='0xFf939bda9F08e1b37C6de2326B8f7bc7fa4Db613';
 
 let provider;
 let signer;
@@ -118,12 +118,16 @@ function App() {
 		// const title = window.prompt('New Event name');
 		let unixStart = moment(activeEventStart).unix();
 		let unixEnd = moment(activeEventEnd).unix();
-		let allDay;
+		let allDay, allDayStartDate, allDayEndDate;
 		if ((moment(activeEventStart).format("hhmm") === '1200') 
 			&& (moment(activeEventEnd).format("hhmm") === '1200')) { 
 			allDay = true;
+			allDayStartDate = moment(activeEventStart).format("YYYYMMDD");
+			allDayEndDate = moment(activeEventEnd).add(1, 'days').format("YYYYMMDD");
 		} else {
 			allDay = false;
+			allDayStartDate = "";
+			allDayEndDate = "";
 		}
 
 			let newEvent = new Event(
@@ -141,7 +145,9 @@ function App() {
 				unixEnd, 
 				newEvent.title,
 				newEvent.description,
-				newEvent.allDay
+				newEvent.allDay,
+				allDayStartDate, // Required as unix time has UTC offset
+				allDayEndDate // Required as unix time has UTC offset
 			).catch(err => alert("Error connecting to blockchain. " + err.message))
 	}
 
@@ -175,7 +181,6 @@ function App() {
 	function displayAddEvent(event) {
 		setActiveEventStart(event.start);
 		setActiveEventEnd(event.end);
-		console.log("ad", event.allDay);
     setOpenAddDisplay(true);
 	}
 
@@ -261,6 +266,7 @@ id="standard-basic"
 label="Summary"
 onChange={(e) => setUserSummary(e.target.value)}
 fullWidth
+autoFocus
 	/>
 	<TextField
 margin="dense"
