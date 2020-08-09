@@ -13,16 +13,17 @@ contract CalStore  {
         uint dtend;
         string summary;
         string description;
+        bool isallday;
         uint uid; // This should by dtstart, plus an id, plus msg.owner Change to string eventually
     }
 
     mapping(address => VEvent[]) private store;
     mapping(address => uint) private count;
 
-    function storeEvent(uint _dtstamp, uint _dtstart, uint _dtend, string memory _summary, string memory _description) public {
+    function storeEvent(uint _dtstamp, uint _dtstart, uint _dtend, string memory _summary, string memory _description, bool _isallday) public {
         count[msg.sender]++;
         uint nextId = count[msg.sender];
-        VEvent memory newEvent = VEvent(_dtstamp, _dtstart, _dtend, _summary, _description, nextId);
+        VEvent memory newEvent = VEvent(_dtstamp, _dtstart, _dtend, _summary, _description,  _isallday, nextId);
         store[msg.sender].push(newEvent);
     }
     function justSayHi() public pure returns (string memory) {

@@ -11,8 +11,9 @@ import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
+import TextField from '@material-ui/core/TextField';
 
-const contractAddress ='0x1D294B6964F0555Db93e4A325329A0049f7cba8E';
+const contractAddress ='0xA4412071370515D33a0315e6E2E47584b88B33d7';
 
 let provider;
 let signer;
@@ -36,8 +37,11 @@ if (typeof window.ethereum !== 'undefined' || (typeof window.web3 !== 'undefined
 
 function App() {
 	const localizer = momentLocalizer(moment);
+	const [userSummary, setUserSummary] = useState("");
+	const [userDesc, setUserDesc] = useState("");
 	const [walAddress, setWalAddress] = useState('0x00');
-	const [open, setOpen] = useState(false);
+	const [openAddDisplay, setOpenAddDisplay] = useState(false);
+	const [openViewDisplay, setOpenViewDisplay] = useState(false);
 	const [activeEventTitle, setActiveEventTitle] = useState("");
 	const [activeEventDesc, setActiveEventDesc] = useState("");
 	const [activeEventId, setActiveEventId] = useState(0);
@@ -58,7 +62,7 @@ function App() {
 							// Synchs events remaining in block only 
 							for (let i = 0; i < blockEvents.length; i++) {
 								let newEvent = new Event(
-									false, 
+									blockEvents[i].isallday, 
 									new Date(moment.unix(blockEvents[i].dtstart.toNumber())), 
 									new Date(moment.unix(blockEvents[i].dtend.toNumber())), 
 									blockEvents[i].summary, 
@@ -110,33 +114,40 @@ function App() {
 	}
 
 	// Adds event when dropped on React calendar
-	function addEvent (event) {
-		const title = window.prompt('New Event name');
-		if (title) {
-			let unixStart = moment(event.start).unix();
-			let unixEnd = moment(event.end).unix();
+	function addEvent() {
+		// const title = window.prompt('New Event name');
+		let unixStart = moment(activeEventStart).unix();
+		let unixEnd = moment(activeEventEnd).unix();
+		let allDay;
+		if ((moment(activeEventStart).format("hhmm") === '1200') 
+			&& (moment(activeEventEnd).format("hhmm") === '1200')) { 
+			allDay = true;
+		} else {
+			allDay = false;
+		}
+
 			let newEvent = new Event(
-				false,
-				event.start, 
-				event.end,
-				title,
-				title,
+				allDay,
+				activeEventStart, 
+				activeEventEnd,
+				userSummary,
+				userDesc,
 				moment().unix()
 			);
 			setSyncEvents([...synchronisingEvents, newEvent]);			
 			contractCalStore.storeEvent(
-				newEvent.id, 
+				newEvent.id, //saved as dtstamp
 				unixStart, 
 				unixEnd, 
 				newEvent.title,
-				newEvent.description
+				newEvent.description,
+				newEvent.allDay
 			).catch(err => alert("Error connecting to blockchain. " + err.message))
-		}
 	}
 
 	// Deletes event when deleted on React calendar
 	function deleteEvent() {
-		setOpen(false);
+		setOpenViewDisplay(false);
 		let deletionsArray = Array.from(synchronisingEvents);
 		for (let i = 0; i < deletionsArray.length; i++) { 
 			if (deletionsArray[i].id === activeEventId) { 
@@ -149,22 +160,38 @@ function App() {
 
 	// Closes Event display dialog
 	function displayClose() {
-		setOpen(false);
+		setOpenAddDisplay(false);
+		setOpenViewDisplay(false);
 	}
 
 
-	// Opens Event display dialog
-	function displayEvent( event ) {
+	function displayAddEventOK() {
+		addEvent();
+		setOpenAddDisplay(false);
+		setOpenViewDisplay(false);
+	}
+
+	// Opens Event add display dialog
+	function displayAddEvent(event) {
+		setActiveEventStart(event.start);
+		setActiveEventEnd(event.end);
+		console.log("ad", event.allDay);
+    setOpenAddDisplay(true);
+	}
+
+	// Opens Event view display dialog
+	function displayViewEvent(event) {
 		setActiveEventId(event.id);
 		setActiveEventTitle(event.title);
 		setActiveEventDesc(event.description);
 		setActiveEventStart(event.start);
 		setActiveEventEnd(event.end);
-    setOpen(true);
+    setOpenViewDisplay(true);
 	}
 
 	return (
 		<main>
+		<span>user email: {userSummary}</span>
 		<h1>Forget-me-Block: Ethereum Calendar</h1>
 		<div>
 		<Calendar
@@ -176,8 +203,8 @@ function App() {
 		startAccessor="start"
 		endAccessor="end"
 		style={{ height: 500 }}
-		onSelectSlot={addEvent}
-		onSelectEvent={displayEvent}
+		onSelectSlot={displayAddEvent}
+		onSelectEvent={displayViewEvent}
 		/>
 		</div>
 
@@ -195,7 +222,7 @@ function App() {
 		}
 		<div>
       <Dialog
-        open={open}
+        open={openViewDisplay}
         onClose={displayClose}
         aria-labelledby="alert-dialog-title"
         aria-describedby="alert-dialog-description"
@@ -218,6 +245,44 @@ function App() {
         </DialogActions>
       </Dialog>
     </div>
+
+	<div>
+	<form>
+ <Dialog open={openAddDisplay} onClose={displayClose} aria-labelledby="form-dialog-title">
+        <DialogTitle id="form-dialog-title">Add event</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+{moment(activeEventStart).format("ddd D MMM YY")}<br/>
+		{moment(activeEventStart).format("H:mm")} - {moment(activeEventEnd).format("H:mm")}<br/> 
+          </DialogContentText>
+	<TextField
+margin="dense"
+id="standard-basic"
+label="Summary"
+onChange={(e) => setUserSummary(e.target.value)}
+fullWidth
+	/>
+	<TextField
+margin="dense"
+id="standard-basic"
+label="Description"
+onChange={(e) => setUserDesc(e.target.value)}
+fullWidth
+	/>
+	</DialogContent>
+	<DialogActions>
+          <Button onClick={displayClose} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={displayAddEventOK} type="submit" color="primary">
+            OK
+          </Button>
+        </DialogActions>
+      </Dialog>
+	</form>
+	</div>
+
+
 
 		</main>
 	);
