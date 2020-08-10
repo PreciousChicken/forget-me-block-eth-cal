@@ -1,7 +1,7 @@
 var ethers = require('ethers');
 var moment = require('moment'); 
 var fs = require('fs');
-var CalStore = require('../client/src/contracts/CalStore.json');
+var CalStore = require('../src/contracts/CalStore.json');
 // const url = "http://127.0.0.1:7545";
 
 // Below is for ropsten
@@ -9,7 +9,7 @@ const network = "ropsten";
 const provider = ethers.getDefaultProvider(network, {
     infura: "79351be4a978403f9bc187aa5060616c"
 });
-const provider = new ethers.providers.JsonRpcProvider(url);
+//const provider = new ethers.providers.JsonRpcProvider(url);
 
 // Below is for local
 // const url = "http://127.0.0.1:7545";
