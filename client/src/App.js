@@ -242,7 +242,7 @@ function App() {
         </DialogContent>
         <DialogActions>
           <Button onClick={deleteEvent} color="primary">
-            Delete
+            Delete {event.end}
           </Button>
           <Button onClick={displayClose} color="primary" autoFocus>
             OK
