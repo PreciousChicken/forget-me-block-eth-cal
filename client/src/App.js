@@ -13,7 +13,7 @@ import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import TextField from '@material-ui/core/TextField';
 
-const contractAddress ='0xFf939bda9F08e1b37C6de2326B8f7bc7fa4Db613';
+const contractAddress ='0x9bef64B6a6d202cF4c1567d8fc46BD6bE184c98B';
 
 let provider;
 let signer;

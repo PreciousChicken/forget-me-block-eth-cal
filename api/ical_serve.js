@@ -5,20 +5,20 @@ var CalStore = require('../client/src/contracts/CalStore.json');
 // const url = "http://127.0.0.1:7545";
 
 // Below is for ropsten
-// const network = "ropsten";
-// const provider = ethers.getDefaultProvider(network, {
-//     infura: "79351be4a978403f9bc187aa5060616c"
-// });
-// const provider = new ethers.providers.JsonRpcProvider(url);
+const network = "ropsten";
+const provider = ethers.getDefaultProvider(network, {
+    infura: "79351be4a978403f9bc187aa5060616c"
+});
+const provider = new ethers.providers.JsonRpcProvider(url);
 
 // Below is for local
-const url = "http://127.0.0.1:7545";
-const provider = ethers.providers.getDefaultProvider(url);
+// const url = "http://127.0.0.1:7545";
+// const provider = ethers.providers.getDefaultProvider(url);
 
 
 
 
-const contractAddress ='0xFf939bda9F08e1b37C6de2326B8f7bc7fa4Db613';
+const contractAddress ='0x9bef64B6a6d202cF4c1567d8fc46BD6bE184c98B';
 var express = require('express')
 var cors = require('cors')
 var app = express()
@@ -78,21 +78,17 @@ app.get('/', (req,res) => {
 	res.send('API online really')
 });
 
-app.get('/listen', (req, res) => {
+app.get('/obj', (req, res) => {
 	const { address } = req.query;
 	let iCal;
-	// getEvent(address).then(cal => {iCal = cal});
-	getEvent(address).then(cal => {return res.send(cal)});
+	getEventsObj(address).then(cal => {return res.send(cal)});
 	console.log('API listen');
 	console.log(address);
-	// res.send('API listen send')
-	// return res.send("Hello");
 });
 
 app.get('/ical', (req, res) => {
 	const { address } = req.query;
 	let iCal;
-	// getEvent(address).then(cal => {iCal = cal});
 	getIcalEvent(address).then(cal => {return res.send(cal)});
 	console.log('API listen');
 	console.log(address);
