@@ -148,5 +148,6 @@ package-lock.json
 # End of https://www.toptal.com/developers/gitignore/api/soliditytruffle,solidity,react
 #
 # JDH
+deployment_address.txt
 .secret
 .infurasecret
