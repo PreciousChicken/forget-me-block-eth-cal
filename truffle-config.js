@@ -20,11 +20,13 @@ const path = require("path");
  *
  */
 
- const HDWalletProvider = require('@truffle/hdwallet-provider');
- const infuraKey = "97bd716cf1c94e10885ed44e68e54c00";
-
  const fs = require('fs');
  const mnemonic = fs.readFileSync(".secret").toString().trim();
+ const infuraSecret = fs.readFileSync(".infurasecret").toString().trim();
+
+ const HDWalletProvider = require('@truffle/hdwallet-provider');
+ const infuraKey = infuraSecret;
+
 
 module.exports = {
 	contracts_build_directory: path.join(__dirname, "client/src/contracts"),
