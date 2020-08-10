@@ -18,5 +18,10 @@ module.exports = {
         "react"
     ],
     "rules": {
-    }
+    },
+	"react/prop-types": [
+  "enabled",
+  { "ignore": "ignore", "customValidators": "customValidator" }
+]
+
 };

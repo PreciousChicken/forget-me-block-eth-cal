@@ -1,4 +1,5 @@
 import React, { useState, useEffect  } from 'react';
+import DialogDateTime from './Components/DialogDateTime';
 import './App.css';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
@@ -47,6 +48,7 @@ function App() {
 	const [activeEventId, setActiveEventId] = useState(0);
 	const [activeEventStart, setActiveEventStart] = useState(new Date());
 	const [activeEventEnd, setActiveEventEnd] = useState(new Date());
+	const [activeEventAllDay, setActiveEventAllDay] = useState(false);
 	const [visibleEvents, setVisibleEvents] = useState([]);
 	const [synchronisingEvents, setSyncEvents] = useState([]);
 
@@ -191,8 +193,11 @@ function App() {
 		setActiveEventDesc(event.description);
 		setActiveEventStart(event.start);
 		setActiveEventEnd(event.end);
+		setActiveEventAllDay(event.allDay);
     setOpenViewDisplay(true);
 	}
+
+
 
 	return (
 		<main>
@@ -232,14 +237,18 @@ function App() {
         <DialogTitle id="alert-dialog-title">{activeEventTitle}</DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
-{moment(activeEventStart).format("ddd D MMM YY")}<br/>
-		{moment(activeEventStart).format("H:mm")} - {moment(activeEventEnd).format("H:mm")}<br/> 
+
+		<DialogDateTime  eventEnd={activeEventEnd} eventStart={activeEventStart} eventAllDay={activeEventAllDay}/>
+
 		Description: {activeEventDesc}<br/>
+	All day: 
+{activeEventAllDay ? <span>all day</span> :  <span>not all day</span> } 
+	<br />
           </DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={deleteEvent} color="primary">
-            Delete {event.end}
+            Delete 
           </Button>
           <Button onClick={displayClose} color="primary" autoFocus>
             OK
@@ -295,5 +304,6 @@ export default App;
 
 
 
+		// <DialogDateTime start={activeEventStart} end={activeEventEnd} allday={activeEventAllDay}/>
 			// <p>actually for testing it is:</p>
 			// <p>http://localhost:3305/listen?address={walAddress}</p>
