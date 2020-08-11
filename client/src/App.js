@@ -113,6 +113,7 @@ function App() {
 		this.id = id; // dtstamp in block, not uid
 		this.uid = 0; // uid in block
 		this.isVisible = true;
+		this.isMine = true;
 	}
 
 	// Adds event when dropped on React calendar
@@ -214,6 +215,26 @@ function App() {
 		style={{ height: 500 }}
 		onSelectSlot={displayAddEvent}
 		onSelectEvent={displayViewEvent}
+		eventPropGetter={
+			(event, start, end, isSelected) => {
+				let newStyle = {
+					backgroundColor: "lightgrey",
+					color: 'black',
+					borderRadius: "0px",
+					border: "none"
+				};
+
+				if (event.isMine){
+					newStyle.backgroundColor = "lightgreen"
+				}
+
+				return {
+					className: "",
+					style: newStyle
+				};
+			}
+		}
+
 		/>
 		</div>
 
