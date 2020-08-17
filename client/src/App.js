@@ -14,7 +14,8 @@ import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import TextField from '@material-ui/core/TextField';
 
-const contractAddress ='0x9bef64B6a6d202cF4c1567d8fc46BD6bE184c98B';
+// const contractAddress ='0x9bef64B6a6d202cF4c1567d8fc46BD6bE184c98B';
+const contractAddress ='0xE303dCfECF938815f990cF97d05A7587E49fF088';
 
 let provider;
 let signer;
