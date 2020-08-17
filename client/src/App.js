@@ -245,7 +245,7 @@ function App() {
 			:
 			<>
 			<h2>Subscribe to this calendar in your email application:</h2>
-			<p>https://ezcontract.hopto.org/api/ical?address={walAddress}</p>
+			<p>https://forget-me-block-eth-cal-open.preciouschicken.com/api?address={walAddress}</p>
 			<p>Instructions for <a href="https://support.microsoft.com/en-us/office/import-or-subscribe-to-a-calendar-in-outlook-com-cff1429c-5af6-41ec-a5b4-74f2c278e98c">Outlook</a> and <a href="https://support.mozilla.org/en-US/kb/creating-new-calendars#w_icalendar-ics">Thunderbird</a></p>
 			</>
 		}
@@ -324,8 +324,3 @@ fullWidth
 
 export default App;
 
-
-
-		// <DialogDateTime start={activeEventStart} end={activeEventEnd} allday={activeEventAllDay}/>
-			// <p>actually for testing it is:</p>
-			// <p>http://localhost:3305/listen?address={walAddress}</p>
