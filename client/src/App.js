@@ -59,7 +59,7 @@ function App() {
 		signer.getAddress()
 			.then(response => {
 				setWalAddress(response);	
-				contractCalStore.getEventsObj(response)
+				contractCalStore.getEventsObj()
 					.then(blockEvents => {
 						if (blockEvents[0]) {
 							// Synchs events remaining in block only 
