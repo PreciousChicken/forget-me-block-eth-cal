@@ -14,8 +14,7 @@ import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import TextField from '@material-ui/core/TextField';
 
-// const contractAddress ='0x9bef64B6a6d202cF4c1567d8fc46BD6bE184c98B';
-const contractAddress ='0xcD66adF1291406b64f5a6bCF359187FAf8807E87';
+const contractAddress = process.env.REACT_APP_CALSTORE_ADDRESS;
 
 let provider;
 let signer;
